@@ -9,7 +9,7 @@ namespace Spobrify
 {
     class lblPlaylist : Label
     {
-        public string id { get; set; } = "";        
+        public string id { get; set; } = "";
         public int type { get; set; } = 0; //0:video, 1:playlist
         public string caption { get; set; } = "";
         public lblPlaylist(string id, int type, string caption)
@@ -18,13 +18,13 @@ namespace Spobrify
             switch(type)
             {
                 case 0:
-                    cm.MenuItems.Add("Reproduzir", new EventHandler(bVideo_Play));
-                    cm.MenuItems.Add("Adicionar á lista de reprodução", new EventHandler(bVideo_Add));
+                    cm.MenuItems.Add("Add to queue and play", new EventHandler(bVideo_Play));
+                    cm.MenuItems.Add("Add to queue", new EventHandler(bVideo_Add));
 
                     break;
                 case 1:
-                    cm.MenuItems.Add("Carregar lista de reprodução", new EventHandler(bList_Add));
-                    cm.MenuItems.Add("Anexar lista de reprodução", new EventHandler(bList_Annex));
+                    cm.MenuItems.Add("Load playlist", new EventHandler(bList_Add));
+                    cm.MenuItems.Add("Add playlist to queue", new EventHandler(bList_Annex));
                     break;
             }
             ContextMenu = cm;
@@ -85,7 +85,7 @@ namespace Spobrify
         {
             IEnumerable<FrmMain> f = Application.OpenForms.OfType<FrmMain>();
             if (f.Any())
-                f.First().GetPlayList(this.id);
+                f.First().GetPlayList(this.id, true);
         }
     }
 }

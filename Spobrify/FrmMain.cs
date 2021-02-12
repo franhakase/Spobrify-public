@@ -120,28 +120,25 @@ namespace Spobrify
         }
 
 
-        public void GetPlayList(string id)
+        public void GetPlayList(string id, bool bAnnex = false)
         {
-            if(MyPlaylist.Count > 0)
+            if (!bAnnex)
             {
                 MyPlaylist.Clear();
-            }
-            MyPlaylist = yt.GetPlayList(id);
-            if(MyPlaylist != null)
-            {
-                grdPlayList.DataSource = null;
-                grdPlayList.DataSource = MyPlaylist;
-                grdPlayList.Columns[1].Visible = false;
-                grdPlayList.Columns[2].Visible = false;
-                grdPlayList.Refresh();
-                if (grdPlayList.Rows.Count > 0)
-                {
-                    JumpToRow(0);
-                }
+                MyPlaylist = yt.GetPlayList(id);
             }
             else
             {
-                MessageBox.Show("Whoops! Something went wrong: playlist is empty or null", "Spobrify - Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MyPlaylist.AddRange(yt.GetPlayList(id));
+            }
+            grdPlayList.DataSource = null;
+            grdPlayList.DataSource = MyPlaylist;
+            grdPlayList.Columns[1].Visible = false;
+            grdPlayList.Columns[2].Visible = false;
+            grdPlayList.Refresh();
+            if (grdPlayList.Rows.Count > 0)
+            {
+                JumpToRow(0);
             }
         }
 

@@ -169,15 +169,16 @@ namespace Spobrify
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                
                 if(playlist.Count > 0)
                 {
                     return playlist;
                 }
                 else
                 {
-                    return null;
+                    return playlist;
                 }
             }
             return playlist;
