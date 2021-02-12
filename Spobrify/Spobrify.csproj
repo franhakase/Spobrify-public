@@ -161,7 +161,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="spobrify.ico" />
-    <None Include="README.md" />
     <None Include="Resources\bt_add.png" />
     <None Include="Resources\save.png" />
     <None Include="Resources\folder_open.png" />
