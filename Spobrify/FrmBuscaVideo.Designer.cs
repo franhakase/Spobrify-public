@@ -86,7 +86,7 @@
             this.btBuscar.Name = "btBuscar";
             this.btBuscar.Size = new System.Drawing.Size(105, 29);
             this.btBuscar.TabIndex = 3;
-            this.btBuscar.Text = "Buscar";
+            this.btBuscar.Text = "Go";
             this.btBuscar.UseVisualStyleBackColor = true;
             this.btBuscar.Click += new System.EventHandler(this.btBuscar_Click);
             // 
@@ -101,7 +101,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "FrmBuscaVideo";
-            this.Text = "Buscar";
+            this.Text = "Search";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FrmBuscaVideo_FormClosed);
             this.Resize += new System.EventHandler(this.FrmBuscaVideo_Resize);
             this.pnlBarraBusca.ResumeLayout(false);

@@ -37,19 +37,19 @@ namespace Spobrify
             Player = new WindowsMediaPlayer();
             Player.PlayStateChange += Player_PlayStateChange;
             ToolTip tt = new ToolTip();
-            tt.SetToolTip(btPesquisar, "Adicionar Música (Pesquisar)");
-            tt.SetToolTip(btBaixoLista, "Mover música para baixo");
-            tt.SetToolTip(btCimaLista, "Mover música para cima");
-            tt.SetToolTip(btRemoverDaLista, "Remover música da lista");
-            tt.SetToolTip(btSalvarPlaylist, "Salvar playlist em arquivo");
-            tt.SetToolTip(btCarregarPlaylist, "Carregar playlist de arquivo");
-            tt.SetToolTip(btJanelaStream, "Abrir janela de overlay para live stream");
+            tt.SetToolTip(btPesquisar, "Add song (Search)");
+            tt.SetToolTip(btBaixoLista, "Mover song down");
+            tt.SetToolTip(btCimaLista, "Move song up");
+            tt.SetToolTip(btRemoverDaLista, "Remove from list");
+            tt.SetToolTip(btSalvarPlaylist, "Save playlist to file");
+            tt.SetToolTip(btCarregarPlaylist, "Load playlist from file");
+            tt.SetToolTip(btJanelaStream, "Open live streaming overlay window");
             tt.SetToolTip(lblVolume, "Volume");
             tt.SetToolTip(brVolume, "Volume");
             tt.SetToolTip(cbShuffle, "Shuffle");
-            tt.SetToolTip(btPlayPause, "Reproduzir/pausar");
-            tt.SetToolTip(btPrev, "Anterior");
-            tt.SetToolTip(btNext, "Próximo");
+            tt.SetToolTip(btPlayPause, "Play/Pause");
+            tt.SetToolTip(btPrev, "Previous");
+            tt.SetToolTip(btNext, "Next");
 
         }
 
@@ -65,7 +65,7 @@ namespace Spobrify
                         File.WriteAllText("regex.txt", wc.DownloadString("https://raw.githubusercontent.com/DoctorFran/Spobrify-public/master/Spobrify/regex.txt"));
                     }
                     string[] _regex = File.ReadAllLines("regex.txt");
-                    if (_regex.Length == 8)
+                    if (_regex.Length == 9)
                     {
                         Patterns.AdaptiveFormats1 = _regex[1];
                         Patterns.AdaptiveFormats2 = _regex[2];
@@ -107,7 +107,6 @@ namespace Spobrify
 
         private void SetVisuals()
         {
-            int rowc = grdPlayList.RowCount;
             int selr = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : 0;
             
             lblNomeDaMusica.Text = MyPlaylist[selr].Nome;
@@ -142,7 +141,7 @@ namespace Spobrify
             }
             else
             {
-                MessageBox.Show("Algo de errado não está certo! Tente novamente.", "Spobrify - Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Whoops! Something went wrong: playlist is empty or null", "Spobrify - Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -277,8 +276,8 @@ namespace Spobrify
         private void btSalvarPlaylist_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.Filter = "Playlist do Spobrify|*.pobre";
-            saveFileDialog1.Title = "Salvar playlist";
+            saveFileDialog1.Filter = "Spobrify playlist|*.pobre";
+            saveFileDialog1.Title = "Save playlist";
             saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             saveFileDialog1.ShowDialog();
             if (saveFileDialog1.FileName != "")
@@ -291,8 +290,8 @@ namespace Spobrify
         {
             MyPlaylist = new List<Musica>();
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            openFileDialog1.Filter = "Playlist do Spobrify|*.pobre";
-            openFileDialog1.Title = "Abrir Playlist";
+            openFileDialog1.Filter = "Spobrify playlist|*.pobre";
+            openFileDialog1.Title = "Open playlist";
             openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             openFileDialog1.ShowDialog();
             if (openFileDialog1.FileName != "")

@@ -22,8 +22,8 @@ namespace Spobrify
             DataTable dtTipoPesq = new DataTable();
             dtTipoPesq.Columns.Add("Descr", typeof(string));
             dtTipoPesq.Columns.Add("ID", typeof(string));
-            dtTipoPesq.Rows.Add(new object[] { "Vídeos", "sp=EgIQAQ%253D%253D" });
-            dtTipoPesq.Rows.Add(new object[] { "Listas de reprodução", "sp=EgIQAw%253D%253D" });
+            dtTipoPesq.Rows.Add(new object[] { "Videos", "sp=EgIQAQ%253D%253D" });
+            dtTipoPesq.Rows.Add(new object[] { "Playlists", "sp=EgIQAw%253D%253D" });
             cmbTipoPesquisa.DataSource = dtTipoPesq;
             cmbTipoPesquisa.DisplayMember = "Descr";
             cmbTipoPesquisa.ValueMember = "ID";
