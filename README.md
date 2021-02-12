@@ -10,7 +10,7 @@
 ### Description
 
 **Spobrify** is a C# application to listen(audio only) to `Youtube.com` videos. It supports most Youtube videos and is capable of loading and saving playlists for your convenience.
-It works by parsing the Youtube web page content and extracting the audio stream, which saves bandwitdth and allows quick content loading.
+It works by parsing the Youtube web page content and extracting the audio stream, which saves bandwitdth and allows quick content loading. In order to use it, you will need **.NET Framework 4.0** or newer and **Windows Media Player** installed. It also relies on **Jurassic** for javascript parsing.
 
 ![Main screen](https://i.imgur.com/Es2O72V.png)
 
