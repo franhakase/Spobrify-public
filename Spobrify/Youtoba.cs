@@ -21,11 +21,11 @@ namespace Spobrify
             string dictResponse = Metodos.Utils.queryStringToDict(Uri.UnescapeDataString(GetResponseContext(videoURL)));
             
             //Pega o descritor de formatos disponíveis do vídeo
-            Regex re = new Regex("(?<=\"adaptiveFormats\":)(.*?)(?=\\])");
+            Regex re = new Regex(Patterns.AdaptiveFormats1);
             string AdaptiveFormats = re.Match(dictResponse).Value;
 
             //Separa cada objeto e popula um vetor de strings. Não está 100% perfeito mas é rápido e funcional!
-            re = new Regex("(?<=\\{\")(.*?)(?=},\\{)");
+            re = new Regex(Patterns.AdaptiveFormats2);
             string[] mc = re.Matches(AdaptiveFormats).Cast<Match>().Select(m => m.Value).ToArray();
 
             //procura o primeiro objeto marcado explicitamente como áudio
@@ -33,7 +33,7 @@ namespace Spobrify
 
             if(AudioMaisProximo > -1)
             {
-                re = new Regex("(?<=\"signatureCipher\":\")(.*?)(?=\")");
+                re = new Regex(Patterns.SignatureCipher);
                 MatchCollection SignatureCipher = re.Matches(mc[AudioMaisProximo]);
                 if(SignatureCipher.Count > 0)
                 {
@@ -43,7 +43,7 @@ namespace Spobrify
                 }
                 else
                 {
-                    re = new Regex("(?<=\"url\":\")(.*?)(?=\")");
+                    re = new Regex(Patterns.FileURL);
                     MatchCollection URL = re.Matches(mc[AudioMaisProximo]);
                     if(URL.Count > 0)
                     {
@@ -73,18 +73,18 @@ namespace Spobrify
                     //downloads the whole page
                     string dpage = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
                     //match the player .js file
-                    Regex dreg = new Regex("(?<=\"jsUrl\":\")(.*?)(?=\",)");
+                    Regex dreg = new Regex(Patterns.JsURL);
                     Match dm = dreg.Match(dpage);
                     string BasePlayer = Regex.Unescape(dm.Groups[1].Value);
                     string djloc = string.Concat("https://youtube.com", BasePlayer);
                     string djs = wc.DownloadString(djloc);
 
                     //match the descrambling function in the downloaded javascript
-                    dreg = new Regex(@"(?<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""""\s*\).*};");
+                    dreg = new Regex(Patterns.JsFunctionPattern1);
                     //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
                     dm = dreg.Match(djs);
                     string dfunc = dm.Groups[1].Value;
-                    dreg = new Regex(string.Concat(Regex.Escape(dfunc), @"=function\(([a-zA-Z]+?)\)\{(.+?)\};"));
+                    dreg = new Regex(string.Concat(Regex.Escape(dfunc), Patterns.JsFunctionPattern2));
                     dm = dreg.Match(djs);
 
                     string dargn = dm.Groups[1].Value;
@@ -98,7 +98,7 @@ namespace Spobrify
                         if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
                             dalgrs.Add(dalgp.Split('.')[0]);
 
-                    dreg = new Regex(string.Concat("var ", dalgrs.First(), @"=\{(.+?)\};"), RegexOptions.Singleline);
+                    dreg = new Regex(string.Concat("var ", dalgrs.First(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
                     dm = dreg.Match(djs);
 
                     dalg = dm.Groups[0].Value;

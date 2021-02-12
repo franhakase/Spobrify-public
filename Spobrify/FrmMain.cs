@@ -28,6 +28,7 @@ namespace Spobrify
         {
             
             InitializeComponent();
+            LoadRegex();
             redimensionar();
             MyPlaylist = new List<Musica>();
             lblNomeDaMusica.Text = "...";
@@ -54,13 +55,32 @@ namespace Spobrify
 
         public void LoadRegex()
         {
-            if(File.Exists("regex.txt"))
+            try
             {
-                using(WebClient wc = new WebClient())
+                if (File.Exists("regex.txt"))
                 {
-                    wc.Proxy = null;
-                    File.WriteAllText("regex.txt", wc.DownloadString(""));
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.Proxy = null;
+                        File.WriteAllText("regex.txt", wc.DownloadString("https://raw.githubusercontent.com/DoctorFran/Spobrify-public/master/Spobrify/regex.txt"));
+                    }
+                    string[] _regex = File.ReadAllLines("regex.txt");
+                    if (_regex.Length == 8)
+                    {
+                        Patterns.AdaptiveFormats1 = _regex[1];
+                        Patterns.AdaptiveFormats2 = _regex[2];
+                        Patterns.SignatureCipher = _regex[3];
+                        Patterns.FileURL = _regex[4];
+                        Patterns.JsURL = _regex[5];
+                        Patterns.JsFunctionPattern1 = _regex[6];
+                        Patterns.JsFunctionPattern2 = _regex[7];
+                        Patterns.JsFunctionPattern3 = _regex[8];
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                File.WriteAllText("error.log", ex.StackTrace);
             }
         }
         private void Player_PlayStateChange(int NewState)
