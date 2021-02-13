@@ -1,10 +1,10 @@
 **Spobrify**
 
- - [Description](#Description)
+- [Description](#Description)
 - [Features](#Features)
 - [Installation](#Installation)
 - [Credits/Special thanks](#Thanks)
-
+- [Contact me!](#Contact)
 
 
 ### Description
@@ -41,3 +41,7 @@ Thanks to:
 - The fine people over at **youtube-dl**;
 - JWT, for his [fabulous Youtube downloader](https://www.jwz.org/hacks/youtubedown);
 - [This gist by Emzi0767](https://gist.github.com/Emzi0767/9248b935e5cca78c5b81111f9c2ea4d8), which inspired me to start this project.
+
+### Contact
+
+If you have any questions, you can find me on Twitter (@doctormadaraki) or Reddit(/u/Zetsubou_tekina).
