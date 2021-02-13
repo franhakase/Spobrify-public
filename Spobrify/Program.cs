@@ -15,6 +15,7 @@ namespace Spobrify
         [STAThread]
         static void Main()
         {
+            //.net 4.0 tls12 kludge
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)0x00000C00 | SecurityProtocolType.Tls;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
