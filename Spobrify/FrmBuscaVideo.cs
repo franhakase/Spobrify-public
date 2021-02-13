@@ -105,7 +105,6 @@ namespace Spobrify
 
                                 lblPlaylist ll = new lblPlaylist(sID, 0, Regex.Unescape(sNome));
                                 ll.Width = alt;
-                                //ll.Height *= 2;
                                 addResult(pnlResults, ll);
 
                             }
@@ -117,7 +116,6 @@ namespace Spobrify
                             {
                                 string sPlaylist = objPlayList.Value;
                                 Regex rTitulo = new Regex(Patterns.PlaylistName);
-                                //videoCount
                                 Match mTitulo = rTitulo.Match(sPlaylist);
                                 rTitulo = new Regex(Patterns.PlaylistVideoCount);
                                 Match mVideoCount = rTitulo.Match(sPlaylist);
@@ -125,7 +123,6 @@ namespace Spobrify
                                 Match mID = rTitulo.Match(sPlaylist);
                                 lblPlaylist ll = new lblPlaylist(mID.Value, 1, Regex.Unescape($"{mTitulo.Value}({mVideoCount.Value} videos)"));
                                 ll.Width = alt;
-                                //ll.Height *= 2;
                                 addResult(pnlResults, ll);
                             }
                             break;

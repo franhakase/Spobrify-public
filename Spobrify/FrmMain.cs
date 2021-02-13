@@ -57,8 +57,6 @@ namespace Spobrify
         {
             try
             {
-                if (File.Exists("regex.txt"))
-                {
                     using (WebClient wc = new WebClient())
                     {
                         wc.Proxy = null;
@@ -85,7 +83,6 @@ namespace Spobrify
                         Patterns.PlaylistVideoCount = _regex[16];
                         Patterns.PlaylistID = _regex[17];
                     }
-                }
             }
             catch(Exception ex)
             {
