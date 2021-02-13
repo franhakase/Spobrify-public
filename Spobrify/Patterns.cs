@@ -15,5 +15,14 @@ namespace Spobrify
         public static string JsFunctionPattern1 { get; set; } = @"(?<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""""\s*\).*};";
         public static string JsFunctionPattern2 { get; set; } = @"=function\(([a-zA-Z]+?)\)\{(.+?)\};";
         public static string JsFunctionPattern3 { get; set; } = @"=\{(.+?)\};";
+        public static string YtInitialData { get; set; } = @"(?<=ytInitialData = )(.*?)(?=;)";
+        public static string VideoRendererBlock { get; set; } = @"(\{""videoRenderer"":)(.*?)(?=,\{""videoRenderer"":)";
+        public static string VideoName { get; set; } = @"(?<=""text"":"")(.*?)(?=""\}\])";
+        public static string VideoID { get; set; } = @"(?<=\{""videoId"":"")(.*?)(?="")";
+        public static string VideoViewCount { get; set; } = @"(?<=""viewCountText"":\{""simpleText"":"")(.*?)(?="")";
+        public static string PlaylistRenderer { get; set; } = @"(\{""playlistRenderer"":)(.*?)(?=,\{""playlistRenderer"":)";
+        public static string PlaylistName { get; set; } = @"(?<=""simpleText"":"")(.*?)(?=""\},)";
+        public static string PlaylistVideoCount { get; set; } = @"(?<=""videoCount"":"")(.*?)(?="")";
+        public static string PlaylistID { get; set; } = @"(?<=""playlistId"":"")(.*?)(?="")";
     }
 }

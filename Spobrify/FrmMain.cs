@@ -65,7 +65,7 @@ namespace Spobrify
                         File.WriteAllText("regex.txt", wc.DownloadString("https://raw.githubusercontent.com/DoctorFran/Spobrify-public/master/Spobrify/regex.txt"));
                     }
                     string[] _regex = File.ReadAllLines("regex.txt");
-                    if (_regex.Length == 9)
+                    if (_regex.Length == 18)
                     {
                         Patterns.AdaptiveFormats1 = _regex[1];
                         Patterns.AdaptiveFormats2 = _regex[2];
@@ -75,6 +75,15 @@ namespace Spobrify
                         Patterns.JsFunctionPattern1 = _regex[6];
                         Patterns.JsFunctionPattern2 = _regex[7];
                         Patterns.JsFunctionPattern3 = _regex[8];
+                        Patterns.YtInitialData = _regex[9];
+                        Patterns.VideoRendererBlock = _regex[10];
+                        Patterns.VideoName = _regex[11];
+                        Patterns.VideoID = _regex[12];
+                        Patterns.VideoViewCount = _regex[13];
+                        Patterns.PlaylistRenderer = _regex[14];
+                        Patterns.PlaylistName = _regex[15];
+                        Patterns.PlaylistVideoCount = _regex[16];
+                        Patterns.PlaylistID = _regex[17];
                     }
                 }
             }

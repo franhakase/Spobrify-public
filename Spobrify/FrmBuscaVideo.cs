@@ -83,7 +83,7 @@ namespace Spobrify
                     wc.Proxy = null;
                     wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36");
                     string dpage = Encoding.UTF8.GetString(wc.DownloadData($"http://youtube.com/results?search_query={Uri.EscapeDataString(txtBusca.Text)}&{tPesquisa}&app=desktop"));
-                    var dreg = new Regex(@"(?<=ytInitialData = )(.*?)(?=;)");
+                    var dreg = new Regex(Patterns.YtInitialData);
                     var dm = dreg.Match(dpage);
                     string teste = $@"{(dm.Groups[0].Value)}";
                     
@@ -91,16 +91,16 @@ namespace Spobrify
                     {
                         case 1:
 
-                            var rgVideos = new Regex("(\\{\"videoRenderer\":)(.*?)(?=,\\{\"videoRenderer\":)");
+                            var rgVideos = new Regex(Patterns.VideoRendererBlock);
                             var objVideos = rgVideos.Matches(teste);
                             foreach(Match v in objVideos)
                             {
                                 string video = v.Value;
-                                Regex rgId = new Regex("(?<=\"text\":\")(.*?)(?=\"\\}\\])");
+                                Regex rgId = new Regex(Patterns.VideoName);
                                 string sNome = rgId.Match(video).Value;
-                                rgId = new Regex("(?<=\\{\"videoId\":\")(.*?)(?=\")");
+                                rgId = new Regex(Patterns.VideoID);
                                 string sID = rgId.Match(video).Value;
-                                rgId = new Regex("(?<=\"viewCountText\":\\{\"simpleText\":\")(.*?)(?=\")");
+                                rgId = new Regex(Patterns.VideoViewCount);
                                 sNome += $"({rgId.Match(video).Value})";
 
                                 lblPlaylist ll = new lblPlaylist(sID, 0, Regex.Unescape(sNome));
@@ -111,17 +111,17 @@ namespace Spobrify
                             }
                             break;
                         case 2:
-                            var plRenderer = new Regex("(\\{\"playlistRenderer\":)(.*?)(?=,\\{\"playlistRenderer\":)");
+                            var plRenderer = new Regex(Patterns.PlaylistRenderer);
                             MatchCollection objPlaylists = plRenderer.Matches(teste);
                             foreach(Match objPlayList in objPlaylists)
                             {
                                 string sPlaylist = objPlayList.Value;
-                                Regex rTitulo = new Regex("(?<=\"simpleText\":\")(.*?)(?=\"\\},)");
+                                Regex rTitulo = new Regex(Patterns.PlaylistName);
                                 //videoCount
                                 Match mTitulo = rTitulo.Match(sPlaylist);
-                                rTitulo = new Regex("(?<=\"videoCount\":\")(.*?)(?=\")");
+                                rTitulo = new Regex(Patterns.PlaylistVideoCount);
                                 Match mVideoCount = rTitulo.Match(sPlaylist);
-                                rTitulo = new Regex("(?<=\"playlistId\":\")(.*?)(?=\")");
+                                rTitulo = new Regex(Patterns.PlaylistID);
                                 Match mID = rTitulo.Match(sPlaylist);
                                 lblPlaylist ll = new lblPlaylist(mID.Value, 1, Regex.Unescape($"{mTitulo.Value}({mVideoCount.Value} videos)"));
                                 ll.Width = alt;
