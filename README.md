@@ -26,7 +26,7 @@ It works by parsing the Youtube web page content and extracting the audio stream
 - Song name overlay window (for use with OBS and other live streaming software);
 - Playlist loading and saving in a custom text format;
 - Play/Pause, Forward/Next, Volume and Shuffle;
-- Lightweight (uses ~36 MB on my computer);
+- Lightweight (uses ~36 MB RAM on my computer);
 - Loads only the audio URL (saves bandwith);
 
 
