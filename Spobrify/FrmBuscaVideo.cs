@@ -51,10 +51,9 @@ namespace Spobrify
             {
                 string tPesquisa = (string)cmbTipoPesquisa.SelectedValue;
                 int tipo = cmbTipoPesquisa.SelectedIndex > 0 ? 2 : 1;
-                var t = new Thread(() => busca(tPesquisa, tipo));
                 e.SuppressKeyPress = true;
                 e.Handled = true;
-                t.Start();
+                busca(tPesquisa, tipo);
             }
         }
 
@@ -105,7 +104,7 @@ namespace Spobrify
 
                                 lblPlaylist ll = new lblPlaylist(sID, 0, Regex.Unescape(sNome));
                                 ll.Width = alt;
-                                addResult(pnlResults, ll);
+                                pnlResults.Controls.Add(ll);
 
                             }
                             break;
@@ -123,7 +122,7 @@ namespace Spobrify
                                 Match mID = rTitulo.Match(sPlaylist);
                                 lblPlaylist ll = new lblPlaylist(mID.Value, 1, Regex.Unescape($"{mTitulo.Value}({mVideoCount.Value} videos)"));
                                 ll.Width = alt;
-                                addResult(pnlResults, ll);
+                                pnlResults.Controls.Add(ll);
                             }
                             break;
 
@@ -153,28 +152,7 @@ namespace Spobrify
         }
 
         private void clearResult(Control pai)
-        {
-            if (pai.InvokeRequired)
-            {
-                pai.Invoke(new MethodInvoker(delegate ()
-                {
-                    foreach (IDisposable control in pai.Controls)
-                    {
-                        
-                        control.Dispose();
-                        
-                    }
-
-                    pai.Controls.Clear();
-                }));
-            }
-            else
-            {
-                foreach (IDisposable control in pai.Controls)
-                    control.Dispose();
-
-                pai.Controls.Clear();
-            }
+        { 
 
         }
 

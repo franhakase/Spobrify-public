@@ -11,7 +11,7 @@
 (\{"videoRenderer":)(.*?)(?=,\{"videoRenderer":)
 (?<="text":")(.*?)(?="\}\])
 (?<=\{"videoId":")(.*?)(?=")
-(?<=\"viewCountText\":\\{\"simpleText\":\")(.*?)(?=\")
+(?<=\"viewCountText\":\{\"simpleText\":\")(.*?)(?=\")
 (\{"playlistRenderer":)(.*?)(?=,\{"playlistRenderer":)
 (?<="simpleText":")(.*?)(?="\},)
 (?<="videoCount":")(.*?)(?=")
