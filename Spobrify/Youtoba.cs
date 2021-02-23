@@ -98,7 +98,7 @@ namespace Spobrify
                         if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
                             dalgrs.Add(dalgp.Split('.')[0]);
 
-                    dreg = new Regex(string.Concat("var ", dalgrs.First(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
+                    dreg = new Regex(string.Concat("var ", dalgrs.Where(c => !c.Contains(")")).FirstOrDefault(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
                     dm = dreg.Match(djs);
 
                     dalg = dm.Groups[0].Value;
