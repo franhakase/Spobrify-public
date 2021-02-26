@@ -81,17 +81,17 @@ namespace Spobrify
                 {
                     wc.Proxy = null;
                     wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36");
-                    string dpage = Encoding.UTF8.GetString(wc.DownloadData($"http://youtube.com/results?search_query={Uri.EscapeDataString(txtBusca.Text)}&{tPesquisa}&app=desktop"));
-                    var dreg = new Regex(Patterns.YtInitialData);
-                    var dm = dreg.Match(dpage);
-                    string teste = $@"{(dm.Groups[0].Value)}";
+                    string dpage = Encoding.UTF8.GetString(wc.DownloadData($"http://youtube.com/results?search_query={Uri.EscapeDataString(txtBusca.Text)}&{tPesquisa}"));
+                    //var dreg = new Regex(Patterns.YtInitialData);
+                    //var dm = dreg.Match(dpage);
+                    //string teste = $@"{(dm.Groups[0].Value)}";
                     
                     switch(type)
                     {
                         case 1:
 
                             var rgVideos = new Regex(Patterns.VideoRendererBlock);
-                            var objVideos = rgVideos.Matches(teste);
+                            var objVideos = rgVideos.Matches(dpage);
                             foreach(Match v in objVideos)
                             {
                                 string video = v.Value;
@@ -110,7 +110,7 @@ namespace Spobrify
                             break;
                         case 2:
                             var plRenderer = new Regex(Patterns.PlaylistRenderer);
-                            MatchCollection objPlaylists = plRenderer.Matches(teste);
+                            MatchCollection objPlaylists = plRenderer.Matches(dpage);
                             foreach(Match objPlayList in objPlaylists)
                             {
                                 string sPlaylist = objPlayList.Value;
