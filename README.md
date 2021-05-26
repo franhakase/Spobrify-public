@@ -44,4 +44,4 @@ Thanks to:
 
 ### Contact
 
-If you have any questions, you can find me on Twitter (@doctormadaraki) or Reddit(/u/Zetsubou_tekina).
+If you have any questions, you can find me on Twitter (@fran_hakase) or Reddit(/u/Zetsubou_tekina).
