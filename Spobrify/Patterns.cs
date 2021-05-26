@@ -24,5 +24,6 @@ namespace Spobrify
         public static string PlaylistName { get; set; } = @"(?<=""simpleText"":"")(.*?)(?=""\},)";
         public static string PlaylistVideoCount { get; set; } = @"(?<=""videoCount"":"")(.*?)(?="")";
         public static string PlaylistID { get; set; } = @"(?<=""playlistId"":"")(.*?)(?="")";
+        public static string YoutubeInitialResponse { get; set; } = "(?<=ytInitialPlayerResponse\\s*=)\\s*({.+?})\\s*(?=;)";
     }
 }

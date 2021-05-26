@@ -63,7 +63,7 @@ namespace Spobrify
                         File.WriteAllText("regex.txt", wc.DownloadString("https://raw.githubusercontent.com/DoctorFran/Spobrify-public/master/Spobrify/regex.txt"));
                     }
                     string[] _regex = File.ReadAllLines("regex.txt");
-                    if (_regex.Length == 18)
+                    if (_regex.Length == 19)
                     {
                         Patterns.AdaptiveFormats1 = _regex[1];
                         Patterns.AdaptiveFormats2 = _regex[2];
@@ -82,6 +82,7 @@ namespace Spobrify
                         Patterns.PlaylistName = _regex[15];
                         Patterns.PlaylistVideoCount = _regex[16];
                         Patterns.PlaylistID = _regex[17];
+                    Patterns.YoutubeInitialResponse = _regex[18];
                     }
             }
             catch(Exception ex)
@@ -103,7 +104,7 @@ namespace Spobrify
 
         public void AttemptPlay(string id)
         {
-            string VideoToPlay = yt.Extract(id);
+            string VideoToPlay = yt.Decipher(id);//yt.Extract(id);
             if(VideoToPlay.Length > 0)
             {
                 PlayFile(VideoToPlay);
@@ -355,16 +356,32 @@ namespace Spobrify
 
         private void btRemoverDaLista_Click(object sender, EventArgs e)
         {
-           if(grdPlayList.SelectedRows.Count > 0)
+            if(grdPlayList.SelectedRows.Count > 0)
+             {
+                 var guarda = grdPlayList.SelectedRows[0].Index;
+                 MyPlaylist.RemoveAt(guarda);
+                 grdPlayList.DataSource = null;
+                 grdPlayList.DataSource = MyPlaylist;
+                 grdPlayList.Columns[1].Visible = false;
+                 grdPlayList.Columns[2].Visible = false;
+             }
+        }
+
+        private void test()
+        {
+            /**/
+            using (WebClient wc = new WebClient())
             {
-                var guarda = grdPlayList.SelectedRows[0].Index;
-                MyPlaylist.RemoveAt(guarda);
-                grdPlayList.DataSource = null;
-                grdPlayList.DataSource = MyPlaylist;
-                grdPlayList.Columns[1].Visible = false;
-                grdPlayList.Columns[2].Visible = false;
+                wc.Proxy = null;
+                string _page = wc.DownloadString("https://www.youtube.com/watch?v=9D8NJxSMHrk");
+                Regex _pResponse = new Regex("(?<=ytInitialPlayerResponse\\s*=)\\s*({.+?})\\s*(?=;)");
+                Match m = _pResponse.Match(_page);
+                string f = m.Value;//Regex.Unescape(m.Value);
+                int a = 0;
             }
         }
+
+
 
         private void btJanelaStream_Click(object sender, EventArgs e)
         {

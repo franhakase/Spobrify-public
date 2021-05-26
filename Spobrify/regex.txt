@@ -1,4 +1,4 @@
-﻿#Regex used to parse search results and audio files. 1-2: Adaptive formats; 3: Signature cipher; 4: File URL; 5: JS file URL; 6-8: JS function patterns; 9: Video renderer initial data; 10: Video renderer block; 11: Video name; 12: Video ID; 13: Viewcount text; 14: playlist renderer; 15: playlist name; 16: Video count text; 17: playlist ID
+﻿#Regex used to parse search results and audio files. 1-2: Adaptive formats; 3: Signature cipher; 4: File URL; 5: JS file URL; 6-8: JS function patterns; 9: Video renderer initial data; 10: Video renderer block; 11: Video name; 12: Video ID; 13: Viewcount text; 14: playlist renderer; 15: playlist name; 16: Video count text; 17: playlist ID; 18: Initial Player Response
 (?<="adaptiveFormats":)(.*?)(?=\])
 (?<=\{")(.*?)(?=},\{)
 (?<="signatureCipher":")(.*?)(?=")
@@ -16,3 +16,4 @@
 (?<="simpleText":")(.*?)(?="\},)
 (?<="videoCount":")(.*?)(?=")
 (?<="playlistId":")(.*?)(?=")
+(?<=ytInitialPlayerResponse\s*=)\s*({.+?})\s*(?=;)

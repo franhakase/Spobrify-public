@@ -14,112 +14,92 @@ namespace Spobrify
 
         }
 
-        //se nao ha cipher ou signaturecipher, retornar url seca
-        //se há, faz o processo abaixo
-        public string Extract(string videoURL)
+
+
+        public string Decipher(string id)
         {
-            string dictResponse = Metodos.Utils.queryStringToDict(Uri.UnescapeDataString(GetResponseContext(videoURL)));
-            
-            //Pega o descritor de formatos disponíveis do vídeo
-            Regex re = new Regex(Patterns.AdaptiveFormats1);
-            string AdaptiveFormats = re.Match(dictResponse).Value;
-
-            //Separa cada objeto e popula um vetor de strings. Não está 100% perfeito mas é rápido e funcional!
-            re = new Regex(Patterns.AdaptiveFormats2);
-            string[] mc = re.Matches(AdaptiveFormats).Cast<Match>().Select(m => m.Value).ToArray();
-
-            //procura o primeiro objeto marcado explicitamente como áudio
-            int AudioMaisProximo = Metodos.Utils.PartialIndexOf(mc, "audio/");
-
-            if(AudioMaisProximo > -1)
+            try
             {
-                re = new Regex(Patterns.SignatureCipher);
-                MatchCollection SignatureCipher = re.Matches(mc[AudioMaisProximo]);
-                if(SignatureCipher.Count > 0)
+                using (WebClient wc = new WebClient())
                 {
-                    string r_cifra = Regex.Unescape(SignatureCipher[0].Value);
-                    Dictionary<string, string> cifra = Metodos.Utils.cifraToDict(r_cifra);
-                    return Decipher(videoURL, cifra);
-                }
-                else
-                {
-                    re = new Regex(Patterns.FileURL);
-                    MatchCollection URL = re.Matches(mc[AudioMaisProximo]);
-                    if(URL.Count > 0)
+                    wc.Proxy = null;
+                    //downloads the whole page
+                    string dpage = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
+
+                    Regex dreg = new Regex(Patterns.YoutubeInitialResponse);
+                    Match dm;
+
+                    string _playerResponse = (dreg.Match(dpage).Value);
+                    dreg = new Regex(Patterns.AdaptiveFormats1);
+
+                    string AdaptiveFormats = dreg.Match((_playerResponse)).Value;
+                    dreg = new Regex(Patterns.AdaptiveFormats2);
+                    string[] mc = dreg.Matches(AdaptiveFormats).Cast<Match>().Select(m => m.Value).ToArray();
+                    int AudioMaisProximo = Metodos.Utils.PartialIndexOf(mc, "audio/");
+                    if (AudioMaisProximo > -1)
                     {
-                        return Uri.UnescapeDataString(Regex.Unescape(URL[0].Value));
+                        dreg = new Regex(Patterns.SignatureCipher);
+                        MatchCollection SignatureCipher = dreg.Matches(mc[AudioMaisProximo]);
+                        if (SignatureCipher.Count > 0)
+                        {
+                            string r_cifra = Regex.Unescape(SignatureCipher[0].Value);
+                            Dictionary<string, string> CipherDetails = Metodos.Utils.cifraToDict(r_cifra);
+
+
+                            //match the player .js file
+                            dreg = new Regex(Patterns.JsURL);
+                            dm = dreg.Match(dpage);
+                            string BasePlayer = Regex.Unescape(dm.Groups[1].Value);
+                            string djloc = string.Concat("https://youtube.com", BasePlayer);
+                            string djs = wc.DownloadString(djloc);
+
+                            //match the descrambling function in the downloaded javascript
+                            dreg = new Regex(Patterns.JsFunctionPattern1);
+                            //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
+                            dm = dreg.Match(djs);
+                            string dfunc = dm.Groups[1].Value;
+                            dreg = new Regex(string.Concat(Regex.Escape(dfunc), Patterns.JsFunctionPattern2));
+                            dm = dreg.Match(djs);
+
+                            string dargn = dm.Groups[1].Value;
+                            string dalg = dm.Groups[2].Value;
+
+                            //pretty prints it for later usage
+                            string djsfunc = string.Concat("var unscramble = function(", dargn, ") { ", dalg, " };");
+                            string[] dalgps = dalg.Split(';');
+                            HashSet<string> dalgrs = new HashSet<string>();
+                            foreach (string dalgp in dalgps)
+                                if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
+                                    dalgrs.Add(dalgp.Split('.')[0]);
+
+                            dreg = new Regex(string.Concat("var ", dalgrs.Where(c => !c.Contains(")")).FirstOrDefault(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
+                            dm = dreg.Match(djs);
+
+                            dalg = dm.Groups[0].Value;
+                            djsfunc = string.Concat(dalg, "\n", djsfunc, "");
+
+                            //instantiates the JS engine,calls the js function and returns the deciphered URL
+                            Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
+                            engine.Evaluate(djsfunc);
+                            string UnscambledCipher = (engine.CallGlobalFunction<string>("unscramble", CipherDetails["s"]));
+
+                            if (!string.IsNullOrEmpty(UnscambledCipher))
+                            {
+                                return Uri.UnescapeDataString($"{CipherDetails["url"]}&{CipherDetails["sp"]}={UnscambledCipher}");
+                            }
+                            else
+                            {
+                                return string.Empty;
+                            }
+
+                        }
                     }
                     else
                     {
                         return "";
                     }
                 }
-            }
-            else
-            {
                 return "";
-            }
-            
-        }
-
-
-        private string Decipher(string id, Dictionary<string,string> CipherDetails)
-        {
-            try
-            {
-                using (WebClient wc = new WebClient())
-                {
-                    wc.Proxy = null;                
-                    //downloads the whole page
-                    string dpage = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
-                    //match the player .js file
-                    Regex dreg = new Regex(Patterns.JsURL);
-                    Match dm = dreg.Match(dpage);
-                    string BasePlayer = Regex.Unescape(dm.Groups[1].Value);
-                    string djloc = string.Concat("https://youtube.com", BasePlayer);
-                    string djs = wc.DownloadString(djloc);
-
-                    //match the descrambling function in the downloaded javascript
-                    dreg = new Regex(Patterns.JsFunctionPattern1);
-                    //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
-                    dm = dreg.Match(djs);
-                    string dfunc = dm.Groups[1].Value;
-                    dreg = new Regex(string.Concat(Regex.Escape(dfunc), Patterns.JsFunctionPattern2));
-                    dm = dreg.Match(djs);
-
-                    string dargn = dm.Groups[1].Value;
-                    string dalg = dm.Groups[2].Value;
-
-                    //pretty prints it for later usage
-                    string djsfunc = string.Concat("var unscramble = function(", dargn, ") { ", dalg, " };");
-                    string[] dalgps = dalg.Split(';');
-                    HashSet<string> dalgrs = new HashSet<string>();
-                    foreach (string dalgp in dalgps)
-                        if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
-                            dalgrs.Add(dalgp.Split('.')[0]);
-
-                    dreg = new Regex(string.Concat("var ", dalgrs.Where(c => !c.Contains(")")).FirstOrDefault(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
-                    dm = dreg.Match(djs);
-
-                    dalg = dm.Groups[0].Value;
-                    djsfunc = string.Concat(dalg, "\n", djsfunc, "");
-
-                    //instantiates the JS engine,calls the js function and returns the deciphered URL
-                    Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
-                    engine.Evaluate(djsfunc);
-                    string UnscambledCipher = (engine.CallGlobalFunction<string>("unscramble", CipherDetails["s"]));
-                    
-                    if (!string.IsNullOrEmpty(UnscambledCipher))
-                    {
-                        return Uri.UnescapeDataString($"{CipherDetails["url"]}&{CipherDetails["sp"]}={UnscambledCipher}");
-                    }
-                    else
-                    {
-                        return string.Empty;
-                    }
-
-                }
-
             }
             catch(Exception ex)
             {
