@@ -93,6 +93,19 @@ namespace Spobrify
                             }
 
                         }
+                        else
+                        {
+                            dreg = new Regex(Patterns.FileURL);
+                            MatchCollection URL = dreg.Matches(mc[AudioMaisProximo]);
+                            if (URL.Count > 0)
+                            {
+                                return Uri.UnescapeDataString(Regex.Unescape(URL[0].Value));
+                            }
+                            else
+                            {
+                                return "";
+                            }
+                        }
                     }
                     else
                     {
