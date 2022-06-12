@@ -32,7 +32,7 @@ It works by parsing the Youtube web page content and extracting the audio stream
 
 ### Installation
 
-Simply extract the provided **.zip** file and run **Spobrify.exe** or download the source and compile it using a recent Visual Studio version (versions tested: 2015, 2017, 2019).
+Simply extract the provided **.zip** file and run **Spobrify.exe** or download the source and compile it using a recent Visual Studio version (versions tested: 2015, 2017, 2019, 2022).
 
 
 ### Thanks
