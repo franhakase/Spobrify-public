@@ -12,7 +12,7 @@ namespace Spobrify
         public static string SignatureCipher { get; set; } = @"(?<=""signatureCipher"":"")(.*?)(?="")";
         public static string FileURL { get; set; } = @"(?<=""url"":"")(.*?)(?="")";
         public static string JsURL { get; set; } = @"(?<=""jsUrl"":"")(.*?)(?="",)";
-        public static string JsFunctionPattern1 { get; set; } = @"(?<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""""\s*\).*};";
+        public static string JsFunctionPattern1 { get; set; } = "(?<sig>[a-zA-Z0-9$]{3})\\s*=\\s*function\\(\\s*a\\s*\\)\\s*{\\s*a\\s*=\\s*a\\.split\\(\\s*\"\"\\s*\\).*};";
         public static string JsFunctionPattern2 { get; set; } = @"=function\(([a-zA-Z]+?)\)\{(.+?)\};";
         public static string JsFunctionPattern3 { get; set; } = @"=\{(.+?)\};";
         public static string YtInitialData { get; set; } = @"(?<=ytInitialData = )(.*?)(?=;)";

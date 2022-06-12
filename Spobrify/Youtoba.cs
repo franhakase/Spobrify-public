@@ -67,6 +67,7 @@ namespace Spobrify
                             //pretty prints it for later usage
                             string djsfunc = string.Concat("var unscramble = function(", dargn, ") { ", dalg, " };");
                             string[] dalgps = dalg.Split(';');
+
                             HashSet<string> dalgrs = new HashSet<string>();
                             foreach (string dalgp in dalgps)
                                 if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
