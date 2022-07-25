@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Jurassic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-//ytm-compact-video-renderer
 namespace Spobrify
 {
     public class Youtoba
@@ -24,96 +24,107 @@ namespace Spobrify
                 {
                     wc.Proxy = null;
                     //downloads the whole page
-                    string dpage = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
+                    string PaginaWebYoutube = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
 
-                    Regex dreg = new Regex(Patterns.YoutubeInitialResponse);
-                    Match dm;
+                    int InicioPlayerResponse = PaginaWebYoutube.IndexOf("ytInitialPlayerResponse") + "ytInitialPlayerResponse".Length + 3;
+                    int FimPlayerResponse = PaginaWebYoutube.IndexOf("};", InicioPlayerResponse) + 1;
 
-                    string _playerResponse = (dreg.Match(dpage).Value);
-                    dreg = new Regex(Patterns.AdaptiveFormats1);
-
-                    string AdaptiveFormats = dreg.Match((_playerResponse)).Value;
-                    dreg = new Regex(Patterns.AdaptiveFormats2);
-                    string[] mc = dreg.Matches(AdaptiveFormats).Cast<Match>().Select(m => m.Value).ToArray();
-                    int AudioMaisProximo = Metodos.Utils.PartialIndexOf(mc, "audio/");
-                    if (AudioMaisProximo > -1)
+                    string ytInitialPlayerResponse = "";
+                    if (InicioPlayerResponse > -1 && FimPlayerResponse > -1)
                     {
-                        dreg = new Regex(Patterns.SignatureCipher);
-                        MatchCollection SignatureCipher = dreg.Matches(mc[AudioMaisProximo]);
-                        if (SignatureCipher.Count > 0)
+                        int len = FimPlayerResponse - InicioPlayerResponse;
+                        ytInitialPlayerResponse = PaginaWebYoutube.Substring(InicioPlayerResponse, len);
+
+                    }
+
+                    string FuncaoJavascriptPegarAudio =
+                    @"function getFirstAudio()
+                    {
+	                    var ytInitialPlayerResponse = @RESPONSE_HERE;
+	                    var adaptiveFormats = ytInitialPlayerResponse.streamingData.adaptiveFormats;
+	                    for(var i = 0; i < adaptiveFormats.length; i++)
+	                    {
+		                    var mimeType = adaptiveFormats[i].mimeType;
+		                    if(mimeType.indexOf('audio/') > -1)
+		                    {
+			                    if(adaptiveFormats[i].signatureCipher != undefined)
+			                    {
+				                    return adaptiveFormats[i].signatureCipher;
+			                    }
+			                    else
+			                    {
+				                    if(adaptiveFormats[i].url != undefined)
+				                    {
+					                    return adaptiveFormats[i].url;
+				                    }				
+			                    }
+			
+		                    }
+	                    }
+                    }";
+                    FuncaoJavascriptPegarAudio = FuncaoJavascriptPegarAudio.Replace("@RESPONSE_HERE", ytInitialPlayerResponse);
+
+                    ScriptEngine Engine = new ScriptEngine();
+                    Engine.Evaluate(FuncaoJavascriptPegarAudio);
+                    string ScrambledCipher = (Engine.CallGlobalFunction<string>("getFirstAudio"));
+                    Dictionary<string, string> CipherDict = Metodos.Utils.cifraToDict(ScrambledCipher);
+                    if(CipherDict.Count == 3)
+                    {
+                        int InicioJSURL = PaginaWebYoutube.IndexOf("jsUrl") + "jsUrl".Length + 3;
+                        int FimJSURL = PaginaWebYoutube.IndexOf("\"", InicioJSURL);
+                        string BasePlayerURL = "";
+                        if (InicioJSURL > -1 && FimJSURL > -1)
                         {
-                            string r_cifra = Regex.Unescape(SignatureCipher[0].Value);
-                            Dictionary<string, string> CipherDetails = Metodos.Utils.cifraToDict(r_cifra);
+                            int len = FimJSURL - InicioJSURL;
+                            BasePlayerURL = PaginaWebYoutube.Substring(InicioJSURL, len);
+                        }
+                        string BasePlayerJS = wc.DownloadString(string.Concat("https://youtube.com", BasePlayerURL));
+
+                        Regex JsFunction = new Regex(Patterns.JsFunctionPattern1);
+                        //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
+                        Match RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
+                        string FuncaoJavascriptDecipher = RegexFuncaoJavascript.Groups[1].Value;
+
+                        JsFunction = new Regex(string.Concat(Regex.Escape(FuncaoJavascriptDecipher), Patterns.JsFunctionPattern2));
+                        RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
 
 
-                            //match the player .js file
-                            dreg = new Regex(Patterns.JsURL);
-                            dm = dreg.Match(dpage);
-                            string BasePlayer = Regex.Unescape(dm.Groups[1].Value);
-                            string djloc = string.Concat("https://youtube.com", BasePlayer);
-                            string djs = wc.DownloadString(djloc);
+                        string ArgumentosFuncaoJavascript = RegexFuncaoJavascript.Groups[1].Value;
+                        string AlgoritmoFuncaoJavascript = RegexFuncaoJavascript.Groups[2].Value;
 
-                            //match the descrambling function in the downloaded javascript
-                            dreg = new Regex(Patterns.JsFunctionPattern1);
-                            //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
-                            dm = dreg.Match(djs);
-                            string dfunc = dm.Groups[1].Value;
-                            dreg = new Regex(string.Concat(Regex.Escape(dfunc), Patterns.JsFunctionPattern2));
-                            dm = dreg.Match(djs);
+                        //pretty prints it for later usage
+                        string FuncaoJavascriptMontada = string.Concat("var unscramble = function(", ArgumentosFuncaoJavascript, ") { ", AlgoritmoFuncaoJavascript, " };");
+                        string[] LinhasAlgoritmoJavascript = AlgoritmoFuncaoJavascript.Split(';');
 
-                            string dargn = dm.Groups[1].Value;
-                            string dalg = dm.Groups[2].Value;
+                        HashSet<string> VariaveisFuncaoJavascript = new HashSet<string>();
+                        foreach (string LinhaAlgoritmoJavascript in LinhasAlgoritmoJavascript)
+                            if (!LinhaAlgoritmoJavascript.StartsWith(string.Concat(ArgumentosFuncaoJavascript, "=")) && !LinhaAlgoritmoJavascript.StartsWith("return "))
+                                VariaveisFuncaoJavascript.Add(LinhaAlgoritmoJavascript.Split('.')[0]);
 
-                            //pretty prints it for later usage
-                            string djsfunc = string.Concat("var unscramble = function(", dargn, ") { ", dalg, " };");
-                            string[] dalgps = dalg.Split(';');
+                        JsFunction = new Regex(string.Concat("var ", VariaveisFuncaoJavascript.Where(c => !c.Contains(")")).FirstOrDefault(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
+                        RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
 
-                            HashSet<string> dalgrs = new HashSet<string>();
-                            foreach (string dalgp in dalgps)
-                                if (!dalgp.StartsWith(string.Concat(dargn, "=")) && !dalgp.StartsWith("return "))
-                                    dalgrs.Add(dalgp.Split('.')[0]);
+                        AlgoritmoFuncaoJavascript = RegexFuncaoJavascript.Groups[0].Value;
+                        FuncaoJavascriptMontada = string.Concat(AlgoritmoFuncaoJavascript, "\n", FuncaoJavascriptMontada, "");
 
-                            dreg = new Regex(string.Concat("var ", dalgrs.Where(c => !c.Contains(")")).FirstOrDefault(), Patterns.JsFunctionPattern3), RegexOptions.Singleline);
-                            dm = dreg.Match(djs);
 
-                            dalg = dm.Groups[0].Value;
-                            djsfunc = string.Concat(dalg, "\n", djsfunc, "");
+                        Engine.Evaluate(FuncaoJavascriptMontada);
+                        string UnscambledCipher = (Engine.CallGlobalFunction<string>("unscramble", CipherDict["s"]));
 
-                            //instantiates the JS engine,calls the js function and returns the deciphered URL
-                            Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
-                            engine.Evaluate(djsfunc);
-                            string UnscambledCipher = (engine.CallGlobalFunction<string>("unscramble", CipherDetails["s"]));
-
-                            if (!string.IsNullOrEmpty(UnscambledCipher))
-                            {
-                                return Uri.UnescapeDataString($"{CipherDetails["url"]}&{CipherDetails["sp"]}={UnscambledCipher}");
-                            }
-                            else
-                            {
-                                return string.Empty;
-                            }
-
+                        if (!string.IsNullOrEmpty(UnscambledCipher))
+                        {
+                            return Uri.UnescapeDataString($"{CipherDict["url"]}&{CipherDict["sp"]}={UnscambledCipher}");
                         }
                         else
                         {
-                            dreg = new Regex(Patterns.FileURL);
-                            MatchCollection URL = dreg.Matches(mc[AudioMaisProximo]);
-                            if (URL.Count > 0)
-                            {
-                                return Uri.UnescapeDataString(Regex.Unescape(URL[0].Value));
-                            }
-                            else
-                            {
-                                return "";
-                            }
+                            return string.Empty;
                         }
                     }
                     else
                     {
-                        return "";
+                        return Uri.UnescapeDataString(ScrambledCipher);
                     }
                 }
-                return "";
             }
             catch(Exception ex)
             {
@@ -123,61 +134,71 @@ namespace Spobrify
         }
 
 
-        private string GetResponseContext(string id)
-        {
-            using (WebClient client = new WebClient())
-            {
-                client.Proxy = null;
-                return client.DownloadString($"https://youtube.com/get_video_info?video_id={id}&el=detailpage");
-            }
-        }
-
         public List<Musica> GetPlayList(string id)
         {
-            List<Musica> playlist = new List<Musica>();
+            List<Musica> Playlist = new List<Musica>();
             try
             {
                 using (WebClient wc = new WebClient())
                 {
                     wc.Proxy = null;
-                    string doc = Encoding.UTF8.GetString(wc.DownloadData($"https://www.youtube.com/playlist?list={id}"));
-                    Regex dreg = new Regex(@"(?<=var ytInitialData = )(.*)(?=;)");
-                    Match dm = dreg.Match(doc);
-                    string teste = $@"{(dm.Groups[0].Value)}";
-                    Regex plRenderer = new Regex("(\\[\\{\"playlistVideoRenderer\":)(.*)(?=\\],\"playlistId\":)");
-                    Match lets_gooo = plRenderer.Match(teste);
-
-                    Regex objVideo = new Regex("(\\{\"playlistVideoRenderer\":)(.*?)(?=\\},\\{\"playlistVideoRenderer\":)");
-                    MatchCollection letsgo2 = objVideo.Matches(lets_gooo.Value);
-                    foreach(Match c in letsgo2)
+                    string PaginaWebYoutube = Encoding.UTF8.GetString(wc.DownloadData($"https://www.youtube.com/playlist?list={id}"));
+                    int InicioInitialData = PaginaWebYoutube.IndexOf("ytInitialData") + "ytInitialData".Length + 3;
+                    int FimInitialData = PaginaWebYoutube.IndexOf("};", InicioInitialData) + 1;
+                    string JsonInitialData = "";
+                    if (InicioInitialData > -1 && FimInitialData > -1)
                     {
-                        string objSingleVideo = c.Value;
-                        Regex rId = new Regex("(?<=\"videoId\":\").*?(?=\")");
-                        string sID = rId.Match(objSingleVideo).Value;
-                        rId = new Regex("(?<=\"url\":\").*?(?=\")");
-                        string sThumbURL = rId.Match(objSingleVideo).Value;
-                        rId = new Regex("(?<=\"text\":\")(.*?)(?=\"\\})");
-                        string sNome = rId.Match(objSingleVideo).Value;
-                        Musica m = new Musica(Metodos.Utils.LimparNomeDoArtista(sNome), sID, Regex.Unescape(sThumbURL));
-                        playlist.Add(m);
+                        int len = FimInitialData - InicioInitialData;
+                        JsonInitialData = PaginaWebYoutube.Substring(InicioInitialData, len);
+
+                    }
+
+                    string FuncaoJavascriptPegarVideos =
+                    @"function returnList()
+                    {
+	                    var ytInitialData = @RESPONSE_HERE;
+	                    var plVideoContents = ytInitialData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].playlistVideoListRenderer.contents;
+	                    var final = [];
+	                    for(var i = 0; i < plVideoContents.length; i++)
+	                    {
+		                    var title = plVideoContents[i].playlistVideoRenderer.title.runs[0].text.split(';').join('').split('|').join('');
+		                    var id = plVideoContents[i].playlistVideoRenderer.videoId;
+		                    var duration = new Date(plVideoContents[i].playlistVideoRenderer.lengthSeconds * 1000).toISOString().substring(14, 19);
+		                    final.push(id+'||'+title+'||'+duration);
+	                    }
+	                    return final.join(';');
+                    }";
+                    FuncaoJavascriptPegarVideos = FuncaoJavascriptPegarVideos.Replace("@RESPONSE_HERE", JsonInitialData);
+
+                    ScriptEngine Engine = new ScriptEngine();
+                    Engine.Evaluate(FuncaoJavascriptPegarVideos);
+                    string ListaDeVideosRaw = (Engine.CallGlobalFunction<string>("returnList"));
+                    string[] ListaDeVideos = ListaDeVideosRaw.Split(';');
+
+                    foreach(string Video in ListaDeVideos)
+                    {
+                        string[] InfoVideo = Video.Split(new[] { "||" }, StringSplitOptions.None);
+                        string IdDoVideo = InfoVideo[0];
+                        string NomeDoVideo = InfoVideo[1];
+                        string DuracaoDoVideo = InfoVideo[2];
+                        Musica EstaMusica = new Musica(Metodos.Utils.LimparNomeDoArtista(NomeDoVideo), IdDoVideo, "");
+                        Playlist.Add(EstaMusica);
                     }
                 }
             }
             catch (Exception ex)
             {
                 
-                if(playlist.Count > 0)
+                if(Playlist.Count > 0)
                 {
-                    return playlist;
+                    return Playlist;
                 }
                 else
                 {
-                    return playlist;
+                    return Playlist;
                 }
             }
-            return playlist;
+            return Playlist;
         }
-
-
     }
 }

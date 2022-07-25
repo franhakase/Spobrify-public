@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jurassic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -12,10 +13,14 @@ namespace Spobrify
         /// <summary>
         /// Ponto de entrada principal para o aplicativo.
         /// </summary>
+        /// 
+        //public static ScriptEngine Engine;
         [STAThread]
         static void Main()
         {
             //.net 4.0 tls12 kludge
+            //Engine = new ScriptEngine();
+           
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)0x00000C00 | SecurityProtocolType.Tls;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

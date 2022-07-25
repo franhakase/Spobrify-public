@@ -89,9 +89,17 @@ namespace Spobrify
                     switch(type)
                     {
                         case 1:
-
+                            int start = dpage.IndexOf("ytInitialData") + "ytInitialData".Length + 3;
+                            int end = dpage.IndexOf("};", start) + 1;
+                            string _raw = "";
+                            if(start > -1 && end > -1)
+                            {
+                                int len = end - start;
+                                _raw = dpage.Substring(start, len);
+                                
+                            }
                             var rgVideos = new Regex(Patterns.VideoRendererBlock);
-                            var objVideos = rgVideos.Matches(dpage);
+                            var objVideos = rgVideos.Matches(_raw);
                             foreach(Match v in objVideos)
                             {
                                 string video = v.Value;

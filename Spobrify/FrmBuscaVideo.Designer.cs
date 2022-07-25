@@ -101,6 +101,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "FrmBuscaVideo";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Search";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FrmBuscaVideo_FormClosed);
             this.Resize += new System.EventHandler(this.FrmBuscaVideo_Resize);
