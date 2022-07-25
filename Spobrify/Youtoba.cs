@@ -23,9 +23,13 @@ namespace Spobrify
                 using (WebClient wc = new WebClient())
                 {
                     wc.Proxy = null;
-                    //downloads the whole page
+                    
+                    // Utilizando um WebClient, fazemos o download da página do Youtube (o conteúdo HTML mesmo) como string
                     string PaginaWebYoutube = wc.DownloadString(string.Concat("https://www.youtube.com/watch?v=", id));
 
+                    // Localizamos na página baixada anteriormente uma variável Javascript chamada "ytInitialPlayerResponse"
+                    // Para isso, simplesmente localizamos a posição de início da cadeia "ytInitialPlayerResponse"
+                    // e a posição da primeira ocorrência da cadeia "};"
                     int InicioPlayerResponse = PaginaWebYoutube.IndexOf("ytInitialPlayerResponse") + "ytInitialPlayerResponse".Length + 3;
                     int FimPlayerResponse = PaginaWebYoutube.IndexOf("};", InicioPlayerResponse) + 1;
 
@@ -37,6 +41,8 @@ namespace Spobrify
 
                     }
 
+                    // A função abaixo, escrita em Javascript, é responsável por pegar o primeiro formato de áudio presente no ytInitialPlayerResponse que extraímos no passo anterior
+                    // Antes era feita via regex, era meio bagunçado e difícil de entender
                     string FuncaoJavascriptPegarAudio =
                     @"function getFirstAudio()
                     {
@@ -62,17 +68,30 @@ namespace Spobrify
 		                    }
 	                    }
                     }";
+
+                    // Insere o ytInitialPlayerResponse que extraímos anteriormente em nossa função Javascript
                     FuncaoJavascriptPegarAudio = FuncaoJavascriptPegarAudio.Replace("@RESPONSE_HERE", ytInitialPlayerResponse);
 
+                    // Instancia uma nova ScriptEngine do Jurassic e roda um eval no nosso código JS
                     ScriptEngine Engine = new ScriptEngine();
                     Engine.Evaluate(FuncaoJavascriptPegarAudio);
-                    string ScrambledCipher = (Engine.CallGlobalFunction<string>("getFirstAudio"));
-                    Dictionary<string, string> CipherDict = Metodos.Utils.cifraToDict(ScrambledCipher);
+
+                    // Utiliza a função CallGlobalFunction<T> do Jurassic com retorno string para pegar as informações do formato de áudio
+                    string PrimeiroFormatoDeAudio = (Engine.CallGlobalFunction<string>("getFirstAudio"));
+
+                    // Converte a string do formato de áudio em dicionário
+                    Dictionary<string, string> CipherDict = Metodos.Utils.cifraToDict(PrimeiroFormatoDeAudio);
+
+                    // Checa se o dicionário foi separado em 3(se não = a string da informação de áudio não precisa ser desembaralhada)
                     if(CipherDict.Count == 3)
                     {
+
+                        // Aqui pegamos a URL do player.js (Mesmo processo de captura do ytInitialPlayerResponse)
                         int InicioJSURL = PaginaWebYoutube.IndexOf("jsUrl") + "jsUrl".Length + 3;
                         int FimJSURL = PaginaWebYoutube.IndexOf("\"", InicioJSURL);
                         string BasePlayerURL = "";
+
+
                         if (InicioJSURL > -1 && FimJSURL > -1)
                         {
                             int len = FimJSURL - InicioJSURL;
@@ -80,23 +99,26 @@ namespace Spobrify
                         }
                         string BasePlayerJS = wc.DownloadString(string.Concat("https://youtube.com", BasePlayerURL));
 
+                        // Infelizmente ainda dependemos de expressões regulares para buscar a função JS que realiza o desembaralhamento da string 
                         Regex JsFunction = new Regex(Patterns.JsFunctionPattern1);
-                        //(?:\b|[^a-zA-Z0-9$])(?P<sig>[a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\).*};
                         Match RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
                         string FuncaoJavascriptDecipher = RegexFuncaoJavascript.Groups[1].Value;
 
                         JsFunction = new Regex(string.Concat(Regex.Escape(FuncaoJavascriptDecipher), Patterns.JsFunctionPattern2));
                         RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
 
-
+                        // Separamos os argumentos e o "corpo da função"(que chamei de algoritmo)
                         string ArgumentosFuncaoJavascript = RegexFuncaoJavascript.Groups[1].Value;
+
                         string AlgoritmoFuncaoJavascript = RegexFuncaoJavascript.Groups[2].Value;
 
-                        //pretty prints it for later usage
+                        // Montamos a função completa com as informações capturadas anteriormente e depois separamos as instruções por linha
                         string FuncaoJavascriptMontada = string.Concat("var unscramble = function(", ArgumentosFuncaoJavascript, ") { ", AlgoritmoFuncaoJavascript, " };");
                         string[] LinhasAlgoritmoJavascript = AlgoritmoFuncaoJavascript.Split(';');
 
                         HashSet<string> VariaveisFuncaoJavascript = new HashSet<string>();
+
+                        // Capturamos todos os nomes de variáveis(que podem ou não fazer parte de uma função escondida dentro de 1.5 MB de Javascript ofuscado)
                         foreach (string LinhaAlgoritmoJavascript in LinhasAlgoritmoJavascript)
                             if (!LinhaAlgoritmoJavascript.StartsWith(string.Concat(ArgumentosFuncaoJavascript, "=")) && !LinhaAlgoritmoJavascript.StartsWith("return "))
                                 VariaveisFuncaoJavascript.Add(LinhaAlgoritmoJavascript.Split('.')[0]);
@@ -105,12 +127,15 @@ namespace Spobrify
                         RegexFuncaoJavascript = JsFunction.Match(BasePlayerJS);
 
                         AlgoritmoFuncaoJavascript = RegexFuncaoJavascript.Groups[0].Value;
-                        FuncaoJavascriptMontada = string.Concat(AlgoritmoFuncaoJavascript, "\n", FuncaoJavascriptMontada, "");
 
+                        // Por fim unimos funções e chamada da função em uma mesma string
+                        FuncaoJavascriptMontada = string.Concat(AlgoritmoFuncaoJavascript, "\n", FuncaoJavascriptMontada);
 
+                        // Assim como fizemos com ytInitialPlayerResponse, damos um eval e chamamos CallGlobalFunction<T> retornando string
                         Engine.Evaluate(FuncaoJavascriptMontada);
                         string UnscambledCipher = (Engine.CallGlobalFunction<string>("unscramble", CipherDict["s"]));
 
+                        // Se deu tudo certo, retorna o parâmetro "url" + a a cifra desembaralhada anteriormente
                         if (!string.IsNullOrEmpty(UnscambledCipher))
                         {
                             return Uri.UnescapeDataString($"{CipherDict["url"]}&{CipherDict["sp"]}={UnscambledCipher}");
@@ -120,9 +145,10 @@ namespace Spobrify
                             return string.Empty;
                         }
                     }
+                    // Caso o dicionário não contenha 3 entradas, provavelmente significa que ytInitialPlayerResponse retornou a URL do áudio em um estado não ofuscado, não sendo necessário o processo de desembaralhamento. 
                     else
                     {
-                        return Uri.UnescapeDataString(ScrambledCipher);
+                        return Uri.UnescapeDataString(PrimeiroFormatoDeAudio);
                     }
                 }
             }
