@@ -1,6 +1,6 @@
 ﻿namespace Spobrify
 {
-    partial class frmNomeMusica
+    partial class FrmNomeMusica
     {
         /// <summary>
         /// Required designer variable.

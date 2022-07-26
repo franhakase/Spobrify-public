@@ -10,11 +10,11 @@ using System.Windows.Forms;
 using Spobrify.Controles;
 namespace Spobrify
 {
-    public partial class frmNomeMusica : DefaultForm
+    public partial class FrmNomeMusica : DefaultForm
     {
         private OutlineLabel label1;
         private TextInfo ti;
-        public frmNomeMusica()
+        public FrmNomeMusica()
         {
             InitializeComponent();
             label1 = new OutlineLabel();
