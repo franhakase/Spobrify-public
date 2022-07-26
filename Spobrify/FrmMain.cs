@@ -28,8 +28,10 @@ namespace Spobrify
         {
             
             InitializeComponent();
-            LoadRegex();
-            redimensionar();
+
+            CarregarRegexes();
+
+            Redimensionar();
             MyPlaylist = new List<Musica>();
             lblNomeDaMusica.Text = "...";
             r = new Random();
@@ -53,7 +55,7 @@ namespace Spobrify
 
         }
 
-        public void LoadRegex()
+        public void CarregarRegexes()
         {
             try
             {
@@ -62,27 +64,27 @@ namespace Spobrify
                         wc.Proxy = null;
                         File.WriteAllText("regex.txt", wc.DownloadString("https://raw.githubusercontent.com/DoctorFran/Spobrify-public/master/Spobrify/regex.txt"));
                     }
-                    string[] _regex = File.ReadAllLines("regex.txt");
-                    if (_regex.Length == 19)
+                    string[] ListaRegexTemp = File.ReadAllLines("regex.txt");
+                    if (ListaRegexTemp.Length == 19)
                     {
-                        Patterns.AdaptiveFormats1 = _regex[1];
-                        Patterns.AdaptiveFormats2 = _regex[2];
-                        Patterns.SignatureCipher = _regex[3];
-                        Patterns.FileURL = _regex[4];
-                        Patterns.JsURL = _regex[5];
-                        Patterns.JsFunctionPattern1 = _regex[6];
-                        Patterns.JsFunctionPattern2 = _regex[7];
-                        Patterns.JsFunctionPattern3 = _regex[8];
-                        Patterns.YtInitialData = _regex[9];
-                        Patterns.VideoRendererBlock = _regex[10];
-                        Patterns.VideoName = _regex[11];
-                        Patterns.VideoID = _regex[12];
-                        Patterns.VideoViewCount = _regex[13];
-                        Patterns.PlaylistRenderer = _regex[14];
-                        Patterns.PlaylistName = _regex[15];
-                        Patterns.PlaylistVideoCount = _regex[16];
-                        Patterns.PlaylistID = _regex[17];
-                    Patterns.YoutubeInitialResponse = _regex[18];
+                        Patterns.AdaptiveFormats1 = ListaRegexTemp[1];
+                        Patterns.AdaptiveFormats2 = ListaRegexTemp[2];
+                        Patterns.SignatureCipher = ListaRegexTemp[3];
+                        Patterns.FileURL = ListaRegexTemp[4];
+                        Patterns.JsURL = ListaRegexTemp[5];
+                        Patterns.JsFunctionPattern1 = ListaRegexTemp[6];
+                        Patterns.JsFunctionPattern2 = ListaRegexTemp[7];
+                        Patterns.JsFunctionPattern3 = ListaRegexTemp[8];
+                        Patterns.YtInitialData = ListaRegexTemp[9];
+                        Patterns.VideoRendererBlock = ListaRegexTemp[10];
+                        Patterns.VideoName = ListaRegexTemp[11];
+                        Patterns.VideoID = ListaRegexTemp[12];
+                        Patterns.VideoViewCount = ListaRegexTemp[13];
+                        Patterns.PlaylistRenderer = ListaRegexTemp[14];
+                        Patterns.PlaylistName = ListaRegexTemp[15];
+                        Patterns.PlaylistVideoCount = ListaRegexTemp[16];
+                        Patterns.PlaylistID = ListaRegexTemp[17];
+                        Patterns.YoutubeInitialResponse = ListaRegexTemp[18];
                     }
             }
             catch(Exception ex)
@@ -102,7 +104,7 @@ namespace Spobrify
             Debug.WriteLine(string.Format("[{0}] {1}", DateTime.Now.ToShortTimeString(), Enum.GetName(typeof(WMPPlayState), Player.playState)));
         }
 
-        public void AttemptPlay(string id)
+        public void ReproduzirMusica(string id)
         {
             string VideoToPlay = yt.Decipher(id);//yt.Extract(id);
             if(VideoToPlay.Length > 0)
@@ -123,7 +125,7 @@ namespace Spobrify
             {
                 f.First().setNome(lblNomeDaMusica.Text);
             }
-            this.Text = $"Spobrify - Now Playing: {MyPlaylist[selr].Nome}";            
+            Text = $"Spobrify - Now Playing: {MyPlaylist[selr].Nome}";            
         }
 
 
@@ -151,10 +153,10 @@ namespace Spobrify
 
         public void AddToPlaylist(string Nome, string ID)
         {
-            int voltar = 0;
+            int MusicaAnterior = 0;
             if(grdPlayList.Rows.Count > 0)
             {
-                voltar = grdPlayList.SelectedRows[0].Index;
+                MusicaAnterior = grdPlayList.SelectedRows[0].Index;
             }
             Musica m = new Musica(Nome, ID);
             MyPlaylist.Add(m);
@@ -181,10 +183,10 @@ namespace Spobrify
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            redimensionar();
+            Redimensionar();
         }
 
-        private void redimensionar()
+        private void Redimensionar()
         {
 
             grdPlayList.Top = 0;
@@ -227,7 +229,7 @@ namespace Spobrify
                 rowNumber = shuffle ? r.Next(grdPlayList.RowCount-1) : rowNumber;
                 grdPlayList.Rows[rowNumber].Selected = true;
                 grdPlayList.Focus();
-                AttemptPlay((string)grdPlayList.SelectedRows[0].Cells[1].Value);
+                ReproduzirMusica((string)grdPlayList.SelectedRows[0].Cells[1].Value);
 
         }
 
@@ -274,39 +276,39 @@ namespace Spobrify
 
         private void grdPlayList_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            AttemptPlay((string)grdPlayList.SelectedRows[0].Cells[1].Value);
+            ReproduzirMusica((string)grdPlayList.SelectedRows[0].Cells[1].Value);
         }
 
         private void btSalvarPlaylist_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.Filter = "Spobrify playlist|*.pobre";
-            saveFileDialog1.Title = "Save playlist";
-            saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            saveFileDialog1.ShowDialog();
-            if (saveFileDialog1.FileName != "")
+            SaveFileDialog DialogoSalvarPlaylist = new SaveFileDialog();
+            DialogoSalvarPlaylist.Filter = "Spobrify playlist|*.pobre";
+            DialogoSalvarPlaylist.Title = "Save playlist";
+            DialogoSalvarPlaylist.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            DialogoSalvarPlaylist.ShowDialog();
+            if (DialogoSalvarPlaylist.FileName != "")
             {
-               File.WriteAllText(saveFileDialog1.FileName,Metodos.Utils.PlaylistParaString(MyPlaylist));
+               File.WriteAllText(DialogoSalvarPlaylist.FileName,Metodos.Utils.PlaylistParaString(MyPlaylist));
             }
         }
 
         private void btCarregarPlaylist_Click(object sender, EventArgs e)
         {
             MyPlaylist = new List<Musica>();
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            openFileDialog1.Filter = "Spobrify playlist|*.pobre";
-            openFileDialog1.Title = "Open playlist";
-            openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            openFileDialog1.ShowDialog();
-            if (openFileDialog1.FileName != "")
+            OpenFileDialog DialogoAbrirPlaylist = new OpenFileDialog();
+            DialogoAbrirPlaylist.Filter = "Spobrify playlist|*.pobre";
+            DialogoAbrirPlaylist.Title = "Open playlist";
+            DialogoAbrirPlaylist.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            DialogoAbrirPlaylist.ShowDialog();
+            if (DialogoAbrirPlaylist.FileName != "")
             {
                 try
                 {
-                    string[] p_intemediate = File.ReadAllLines(openFileDialog1.FileName);
-                    foreach(string s in p_intemediate)
+                    string[] DadosPlaylistRaw = File.ReadAllLines(DialogoAbrirPlaylist.FileName);
+                    foreach(string Faixa in DadosPlaylistRaw)
                     {
-                        string[] ss = s.Split(new string[] { "|_|" }, StringSplitOptions.None);
-                        MyPlaylist.Add(new Musica(ss[1], ss[0], ss[2]));
+                        string[] DadosDaFaixa = Faixa.Split(new string[] { "|_|" }, StringSplitOptions.None);
+                        MyPlaylist.Add(new Musica(DadosDaFaixa[1], DadosDaFaixa[0], DadosDaFaixa[2]));
                     }
                     grdPlayList.DataSource = null;
                     grdPlayList.DataSource = MyPlaylist;
@@ -325,15 +327,15 @@ namespace Spobrify
         {
             if(grdPlayList.SelectedRows.Count > 0 && grdPlayList.SelectedRows[0].Index > 0)
             {
-                int guarda = grdPlayList.SelectedRows[0].Index;
-                Musica item = MyPlaylist[grdPlayList.SelectedRows[0].Index];
+                int PosicaoAtual = grdPlayList.SelectedRows[0].Index;
+                Musica MusicaPosicaoAtual = MyPlaylist[grdPlayList.SelectedRows[0].Index];
                 MyPlaylist.RemoveAt(grdPlayList.SelectedRows[0].Index);
-                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index - 1, item);
+                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index - 1, MusicaPosicaoAtual);
                 grdPlayList.DataSource = null;
                 grdPlayList.DataSource = MyPlaylist;
                 grdPlayList.Columns[1].Visible = false;
                 grdPlayList.Columns[2].Visible = false;
-                JumpToRow(guarda - 1);
+                JumpToRow(PosicaoAtual - 1);
             }
         }
 
@@ -341,15 +343,15 @@ namespace Spobrify
         {
             if (grdPlayList.SelectedRows.Count > 0 && grdPlayList.SelectedRows[0].Index < grdPlayList.RowCount - 1)
             {
-                int guarda = grdPlayList.SelectedRows[0].Index;
-                Musica item = MyPlaylist[grdPlayList.SelectedRows[0].Index];
+                int PosicaoAtual = grdPlayList.SelectedRows[0].Index;
+                Musica MusicaPosicaoAtual = MyPlaylist[grdPlayList.SelectedRows[0].Index];
                 MyPlaylist.RemoveAt(grdPlayList.SelectedRows[0].Index);
-                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index + 1, item);
+                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index + 1, MusicaPosicaoAtual);
                 grdPlayList.DataSource = null;
                 grdPlayList.DataSource = MyPlaylist;
                 grdPlayList.Columns[1].Visible = false;
                 grdPlayList.Columns[2].Visible = false;
-                JumpToRow(guarda + 1);
+                JumpToRow(PosicaoAtual + 1);
             }
 
         }
@@ -358,8 +360,8 @@ namespace Spobrify
         {
             if(grdPlayList.SelectedRows.Count > 0)
              {
-                 var guarda = grdPlayList.SelectedRows[0].Index;
-                 MyPlaylist.RemoveAt(guarda);
+                 var PosicaoAtual = grdPlayList.SelectedRows[0].Index;
+                 MyPlaylist.RemoveAt(PosicaoAtual);
                  grdPlayList.DataSource = null;
                  grdPlayList.DataSource = MyPlaylist;
                  grdPlayList.Columns[1].Visible = false;
@@ -367,37 +369,24 @@ namespace Spobrify
              }
         }
 
-        private void test()
-        {
-            /**/
-            using (WebClient wc = new WebClient())
-            {
-                wc.Proxy = null;
-                string _page = wc.DownloadString("https://www.youtube.com/watch?v=9D8NJxSMHrk");
-                Regex _pResponse = new Regex("(?<=ytInitialPlayerResponse\\s*=)\\s*({.+?})\\s*(?=;)");
-                Match m = _pResponse.Match(_page);
-                string f = m.Value;//Regex.Unescape(m.Value);
-                int a = 0;
-            }
-        }
 
 
 
         private void btJanelaStream_Click(object sender, EventArgs e)
         {
-            var f = Application.OpenForms.OfType<frmNomeMusica>().ToList();
-            if(f.Any())
+            var FrmJanelaStream = Application.OpenForms.OfType<frmNomeMusica>().ToList();
+            if(FrmJanelaStream.Any())
             {
 
-                f.First().WindowState = FormWindowState.Normal;
-                f.First().BringToFront();
-                f.First().setNome(lblNomeDaMusica.Text);
+                FrmJanelaStream.First().WindowState = FormWindowState.Normal;
+                FrmJanelaStream.First().BringToFront();
+                FrmJanelaStream.First().setNome(lblNomeDaMusica.Text);
             }
             else
             {
-                frmNomeMusica frm = new frmNomeMusica();
-                frm.Show();
-                frm.setNome(lblNomeDaMusica.Text);
+                frmNomeMusica Form = new frmNomeMusica();
+                Form.Show();
+                Form.setNome(lblNomeDaMusica.Text);
             }
         }
 
@@ -412,27 +401,27 @@ namespace Spobrify
                 return;
 
             Button b = (Button)sender;
-            int current_track = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : -1;
-            bool ultima = current_track >= grdPlayList.RowCount-1;
-            bool primeira = current_track == 0;
+            int FaixaAtual = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : -1;
+            bool EhUltimaFaixa = FaixaAtual >= grdPlayList.RowCount-1;
+            bool EhPrimeiraFaixa = FaixaAtual == 0;
             switch (b.Name)
             {
                 case "btPrev":
-                    if(!primeira)
+                    if(!EhPrimeiraFaixa)
                     {
-                        JumpToRowAndPlay(current_track - 1, cbShuffle.Checked);
+                        JumpToRowAndPlay(FaixaAtual - 1, cbShuffle.Checked);
                     }
                     break;
                 case "btPlayPause":
-                        if (Player.playState == WMPPlayState.wmppsPlaying)
-                            Player.controls.pause();
-                        else
-                            Player.controls.play();
+                    if (Player.playState == WMPPlayState.wmppsPlaying)
+                        Player.controls.pause();
+                    else
+                        Player.controls.play();
                     break;
                 case "btNext":
-                    if (!ultima)
+                    if (!EhUltimaFaixa)
                     {
-                        JumpToRowAndPlay(current_track + 1, cbShuffle.Checked);
+                        JumpToRowAndPlay(FaixaAtual + 1, cbShuffle.Checked);
                     }
                     break;
             }

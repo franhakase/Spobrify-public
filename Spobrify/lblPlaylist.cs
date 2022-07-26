@@ -28,7 +28,7 @@ namespace Spobrify
                     break;
             }
             ContextMenu = cm;
-            Font = new Font("Segoe UI", 8f, FontStyle.Regular);
+            //Font = new Font("Segoe UI", 8f, FontStyle.Regular);
             ForeColor = Color.WhiteSmoke;
             Margin = new Padding(2, 2, 2, 2);
             Padding = new Padding(2, 2, 2, 2);
@@ -62,7 +62,7 @@ namespace Spobrify
             IEnumerable<FrmMain> f = Application.OpenForms.OfType<FrmMain>();
             if (f.Any())
                 f.First().AddToPlaylist(_artist, id);
-                f.First().AttemptPlay(id);
+                f.First().ReproduzirMusica(id);
 
         }
 
