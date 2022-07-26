@@ -11,16 +11,16 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using WMPLib;
+using Spobrify.Metodos;
 
 namespace Spobrify
 {
     public partial class FrmMain : DefaultForm
     {
-        private Youtoba yt;
-        private Random r;
+        //private Youtoba yt;
+        private Random GeradorNumeroRandom;
         private WindowsMediaPlayer Player;
-        private List<Musica> MyPlaylist;
-        private bool _tbClicked = false;
+        private bool SeekbarFoiClicado = false;
         bool bSeek;
         
         
@@ -32,10 +32,8 @@ namespace Spobrify
             CarregarRegexes();
 
             Redimensionar();
-            MyPlaylist = new List<Musica>();
             lblNomeDaMusica.Text = "...";
-            r = new Random();
-            yt = new Youtoba();
+            GeradorNumeroRandom = new Random();
             Player = new WindowsMediaPlayer();
             Player.PlayStateChange += Player_PlayStateChange;
             ToolTip tt = new ToolTip();
@@ -106,7 +104,7 @@ namespace Spobrify
 
         public void ReproduzirMusica(string id)
         {
-            string VideoToPlay = yt.Decipher(id);//yt.Extract(id);
+            string VideoToPlay = ExtratorYT.Decipher(id);//yt.Extract(id);
             if(VideoToPlay.Length > 0)
             {
                 PlayFile(VideoToPlay);
@@ -116,16 +114,16 @@ namespace Spobrify
 
         private void SetVisuals()
         {
-            int selr = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : 0;
-            
-            lblNomeDaMusica.Text = MyPlaylist[selr].Nome;
+            int PosicaoDaGrade = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : 0;
+            string NomeDaMusica = (string)grdPlayList.SelectedRows[0].Cells["Nome"].Value;
+            lblNomeDaMusica.Text = NomeDaMusica;
             lblNomeDaMusica.Left = ((ClientSize.Width + grdPlayList.Width) - lblNomeDaMusica.Width) / 2;
             var f = Application.OpenForms.OfType<frmNomeMusica>().ToList();
             if (f.Any())
             {
                 f.First().setNome(lblNomeDaMusica.Text);
             }
-            Text = $"Spobrify - Now Playing: {MyPlaylist[selr].Nome}";            
+            Text = $"Spobrify - Now Playing: {NomeDaMusica}";            
         }
 
 
@@ -133,38 +131,22 @@ namespace Spobrify
         {
             if (!bAnnex)
             {
-                MyPlaylist.Clear();
-                MyPlaylist = yt.GetPlayList(id);
+                grdPlayList.Rows.Clear();
             }
-            else
+
+            List<Musica> PlaylistDoYoutube = ExtratorYT.GetPlayList(id);
+            foreach(Musica MusicaDaPlaylist in PlaylistDoYoutube)
             {
-                MyPlaylist.AddRange(yt.GetPlayList(id));
+                grdPlayList.Rows.Add(new object[] {MusicaDaPlaylist.Nome, MusicaDaPlaylist.ID, MusicaDaPlaylist.Thumb});
             }
-            grdPlayList.DataSource = null;
-            grdPlayList.DataSource = MyPlaylist;
-            grdPlayList.Columns[1].Visible = false;
-            grdPlayList.Columns[2].Visible = false;
-            grdPlayList.Refresh();
-            if (grdPlayList.Rows.Count > 0)
-            {
-                JumpToRow(0);
-            }
+            
         }
 
         public void AddToPlaylist(string Nome, string ID)
         {
-            int MusicaAnterior = 0;
-            if(grdPlayList.Rows.Count > 0)
-            {
-                MusicaAnterior = grdPlayList.SelectedRows[0].Index;
-            }
-            Musica m = new Musica(Nome, ID);
-            MyPlaylist.Add(m);
-            grdPlayList.DataSource = null;
-            grdPlayList.DataSource = MyPlaylist;
-            grdPlayList.Columns[1].Visible = false;
-            grdPlayList.Columns[2].Visible = false;
-            grdPlayList.Refresh();            
+            int MusicaAnterior = grdPlayList.Rows.Count > 0 ? grdPlayList.SelectedRows[0].Index : 0;
+            grdPlayList.Rows.Add(new object[] { Nome, ID, "" });
+            JumpToRow(MusicaAnterior);     
         }
 
         private void PlayFile(string url)
@@ -219,14 +201,14 @@ namespace Spobrify
 
         private void JumpToRow(int rowNumber, bool shuffle = false)
         {
-                rowNumber = shuffle ? r.Next(grdPlayList.RowCount-1) : rowNumber;
+                rowNumber = shuffle ? GeradorNumeroRandom.Next(grdPlayList.RowCount-1) : rowNumber;
                 grdPlayList.Rows[rowNumber].Selected = true;
                 grdPlayList.Focus();   
         }
 
         private void JumpToRowAndPlay(int rowNumber, bool shuffle = false)
         {
-                rowNumber = shuffle ? r.Next(grdPlayList.RowCount-1) : rowNumber;
+                rowNumber = shuffle ? GeradorNumeroRandom.Next(grdPlayList.RowCount-1) : rowNumber;
                 grdPlayList.Rows[rowNumber].Selected = true;
                 grdPlayList.Focus();
                 ReproduzirMusica((string)grdPlayList.SelectedRows[0].Cells[1].Value);
@@ -235,7 +217,7 @@ namespace Spobrify
 
         private void timerSeekbar_Tick(object sender, EventArgs e)
         {
-            if(Player != null && Player.controls.currentItem != null && Player.controls.currentItem.duration > 0 && !_tbClicked)
+            if(Player != null && Player.controls.currentItem != null && Player.controls.currentItem.duration > 0 && !SeekbarFoiClicado)
             {
                 if((brTempo.Value + 1) < (int)Player.controls.currentItem.duration)
                 {
@@ -288,13 +270,17 @@ namespace Spobrify
             DialogoSalvarPlaylist.ShowDialog();
             if (DialogoSalvarPlaylist.FileName != "")
             {
-               File.WriteAllText(DialogoSalvarPlaylist.FileName,Metodos.Utils.PlaylistParaString(MyPlaylist));
+                StringBuilder StringPlaylist = new StringBuilder();
+                foreach (DataGridViewRow dgv in grdPlayList.Rows)
+                {
+                    StringPlaylist.AppendLine($"{dgv.Cells["ID"].Value}|_|{dgv.Cells["Nome"].Value}|_|{dgv.Cells["Thumb"].Value}");
+                }
+                File.WriteAllText(DialogoSalvarPlaylist.FileName,StringPlaylist.ToString());
             }
         }
 
         private void btCarregarPlaylist_Click(object sender, EventArgs e)
         {
-            MyPlaylist = new List<Musica>();
             OpenFileDialog DialogoAbrirPlaylist = new OpenFileDialog();
             DialogoAbrirPlaylist.Filter = "Spobrify playlist|*.pobre";
             DialogoAbrirPlaylist.Title = "Open playlist";
@@ -308,12 +294,8 @@ namespace Spobrify
                     foreach(string Faixa in DadosPlaylistRaw)
                     {
                         string[] DadosDaFaixa = Faixa.Split(new string[] { "|_|" }, StringSplitOptions.None);
-                        MyPlaylist.Add(new Musica(DadosDaFaixa[1], DadosDaFaixa[0], DadosDaFaixa[2]));
+                        grdPlayList.Rows.Add(new object[]{DadosDaFaixa[1], DadosDaFaixa[0], DadosDaFaixa[2]});
                     }
-                    grdPlayList.DataSource = null;
-                    grdPlayList.DataSource = MyPlaylist;
-                    grdPlayList.Columns[1].Visible = false;
-                    grdPlayList.Columns[2].Visible = false;
                     JumpToRow(0);
                 }
                 catch(Exception ex)
@@ -328,13 +310,9 @@ namespace Spobrify
             if(grdPlayList.SelectedRows.Count > 0 && grdPlayList.SelectedRows[0].Index > 0)
             {
                 int PosicaoAtual = grdPlayList.SelectedRows[0].Index;
-                Musica MusicaPosicaoAtual = MyPlaylist[grdPlayList.SelectedRows[0].Index];
-                MyPlaylist.RemoveAt(grdPlayList.SelectedRows[0].Index);
-                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index - 1, MusicaPosicaoAtual);
-                grdPlayList.DataSource = null;
-                grdPlayList.DataSource = MyPlaylist;
-                grdPlayList.Columns[1].Visible = false;
-                grdPlayList.Columns[2].Visible = false;
+                DataGridViewRow RowSelecionada = grdPlayList.SelectedRows[0];
+                grdPlayList.Rows.Remove(RowSelecionada);
+                grdPlayList.Rows.Insert(PosicaoAtual - 1, RowSelecionada);
                 JumpToRow(PosicaoAtual - 1);
             }
         }
@@ -344,13 +322,10 @@ namespace Spobrify
             if (grdPlayList.SelectedRows.Count > 0 && grdPlayList.SelectedRows[0].Index < grdPlayList.RowCount - 1)
             {
                 int PosicaoAtual = grdPlayList.SelectedRows[0].Index;
-                Musica MusicaPosicaoAtual = MyPlaylist[grdPlayList.SelectedRows[0].Index];
-                MyPlaylist.RemoveAt(grdPlayList.SelectedRows[0].Index);
-                MyPlaylist.Insert(grdPlayList.SelectedRows[0].Index + 1, MusicaPosicaoAtual);
-                grdPlayList.DataSource = null;
-                grdPlayList.DataSource = MyPlaylist;
-                grdPlayList.Columns[1].Visible = false;
-                grdPlayList.Columns[2].Visible = false;
+
+                DataGridViewRow RowSelecionada = grdPlayList.SelectedRows[0];
+                grdPlayList.Rows.Remove(RowSelecionada);
+                grdPlayList.Rows.Insert(PosicaoAtual + 1, RowSelecionada);
                 JumpToRow(PosicaoAtual + 1);
             }
 
@@ -360,12 +335,8 @@ namespace Spobrify
         {
             if(grdPlayList.SelectedRows.Count > 0)
              {
-                 var PosicaoAtual = grdPlayList.SelectedRows[0].Index;
-                 MyPlaylist.RemoveAt(PosicaoAtual);
-                 grdPlayList.DataSource = null;
-                 grdPlayList.DataSource = MyPlaylist;
-                 grdPlayList.Columns[1].Visible = false;
-                 grdPlayList.Columns[2].Visible = false;
+                var PosicaoAtual = grdPlayList.SelectedRows[0].Index;
+                grdPlayList.Rows.RemoveAt(PosicaoAtual);
              }
         }
 
@@ -400,11 +371,11 @@ namespace Spobrify
             if (Player == null)
                 return;
 
-            Button b = (Button)sender;
+            Button BotaoPressionado = (Button)sender;
             int FaixaAtual = grdPlayList.SelectedRows.Count > 0 ? grdPlayList.SelectedRows[0].Index : -1;
             bool EhUltimaFaixa = FaixaAtual >= grdPlayList.RowCount-1;
             bool EhPrimeiraFaixa = FaixaAtual == 0;
-            switch (b.Name)
+            switch (BotaoPressionado.Name)
             {
                 case "btPrev":
                     if(!EhPrimeiraFaixa)
@@ -449,12 +420,12 @@ namespace Spobrify
 
         private void brTempo_MouseUp(object sender, MouseEventArgs e)
         {
-            _tbClicked = false;
+            SeekbarFoiClicado = false;
         }
 
         private void brTempo_MouseDown(object sender, MouseEventArgs e)
         {
-            _tbClicked = true;
+            SeekbarFoiClicado = true;
         }
 
         private void btPesquisar_Click(object sender, EventArgs e)

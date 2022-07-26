@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
+using Spobrify.Controles;
 namespace Spobrify
 {
     public partial class frmNomeMusica : DefaultForm

@@ -9,7 +9,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-
+using Spobrify.Metodos;
+using Spobrify.Controles;
 namespace Spobrify
 {
     public partial class FrmBuscaVideo : DefaultForm

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Spobrify
+namespace Spobrify.Controles
 {
     class lblPlaylist : Label
     {
@@ -58,7 +58,7 @@ namespace Spobrify
 
         private void bVideo_Play(object sender, EventArgs e)
         {
-            string _artist = System.Web.HttpUtility.HtmlDecode(Metodos.Utils.LimparNomeDoArtista(this.caption));
+            string _artist = this.caption;
             IEnumerable<FrmMain> f = Application.OpenForms.OfType<FrmMain>();
             if (f.Any())
                 f.First().AddToPlaylist(_artist, id);
@@ -68,7 +68,7 @@ namespace Spobrify
 
         private void bVideo_Add(object sender, EventArgs e)
         {
-            string _artist = System.Web.HttpUtility.HtmlDecode(Metodos.Utils.LimparNomeDoArtista(this.caption));
+            string _artist = this.caption;
             IEnumerable<FrmMain> f = Application.OpenForms.OfType<FrmMain>();
             if (f.Any())
                 f.First().AddToPlaylist(_artist, id);

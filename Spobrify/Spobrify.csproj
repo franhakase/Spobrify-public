@@ -80,40 +80,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DefaultForm.cs">
+    <Compile Include="Forms\DefaultForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DefaultForm.Designer.cs">
+    <Compile Include="Forms\DefaultForm.Designer.cs">
       <DependentUpon>DefaultForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractedMusica.cs" />
-    <Compile Include="FrmMain.cs">
+    <Compile Include="Forms\FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FrmMain.Designer.cs">
+    <Compile Include="Forms\FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrmBuscaVideo.cs">
+    <Compile Include="Forms\FrmBuscaVideo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FrmBuscaVideo.Designer.cs">
+    <Compile Include="Forms\FrmBuscaVideo.Designer.cs">
       <DependentUpon>FrmBuscaVideo.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmNomeMusica.cs">
+    <Compile Include="Forms\frmNomeMusica.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmNomeMusica.Designer.cs">
+    <Compile Include="Forms\frmNomeMusica.Designer.cs">
       <DependentUpon>frmNomeMusica.cs</DependentUpon>
     </Compile>
-    <Compile Include="lblPlaylist.cs">
+    <Compile Include="Controles\lblPlaylist.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Metodos\Utils.cs" />
-    <Compile Include="Musica.cs" />
-    <Compile Include="OutlineLabel.cs">
+    <Compile Include="Objetos\Musica.cs" />
+    <Compile Include="Controles\OutlineLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Patterns.cs" />
+    <Compile Include="Metodos\Patterns.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -121,17 +120,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Youtoba.cs" />
-    <EmbeddedResource Include="DefaultForm.resx">
+    <Compile Include="Metodos\ExtratorYT.cs" />
+    <EmbeddedResource Include="Forms\DefaultForm.resx">
       <DependentUpon>DefaultForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FrmMain.resx">
+    <EmbeddedResource Include="Forms\FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FrmBuscaVideo.resx">
+    <EmbeddedResource Include="Forms\FrmBuscaVideo.resx">
       <DependentUpon>FrmBuscaVideo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmNomeMusica.resx">
+    <EmbeddedResource Include="Forms\frmNomeMusica.resx">
       <DependentUpon>frmNomeMusica.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

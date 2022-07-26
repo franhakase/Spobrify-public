@@ -11,57 +11,6 @@ namespace Spobrify.Metodos
     public static class Utils
     {
         private static string[] TermosParaRemover = { "MV", "M/V", "PV", "Official", "Lyrics", "Music", "Video" , "Legendado", };
-        public static string PlaylistParaString(List<Musica> Playlist)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach(Musica m in Playlist)
-            {
-                sb.AppendLine($"{m.ID}|_|{m.Nome}|_|{m.Thumb}");
-            }
-            return sb.ToString();
-        }
-
-        public static string LimparNomeDoArtista(string entrada)
-        {
-            //『』
-            entrada = Regex.Replace(entrada, @"\([^()]*\)", string.Empty);
-            entrada = Regex.Replace(entrada, @"\[(.*?)\]", string.Empty);
-           
-            entrada = LimparDaString(entrada);
-            entrada = entrada.Trim();
-            entrada = entrada.Replace("『", "");
-            entrada = entrada.Replace("』", "");
-            entrada = entrada.Replace("_", "");
-            entrada = entrada.Replace("\"", "");
-            entrada = entrada.Replace("/", "");
-            entrada = entrada.Replace("\\", "");
-            entrada = entrada.Replace("+++", "");
-            entrada = entrada.Replace("+", " ");
-            entrada = entrada.Replace("'", " ");
-            entrada = entrada.Replace("‘", " ");
-            entrada = entrada.Replace("‘", " ");
-            entrada = entrada.Replace("’", " ");
-            
-            entrada = entrada.Replace("  ", "");
-            entrada = entrada.Replace(" - - ", " - ");
-            return entrada;
-
-        }
-
-        public static string LimparDaString(string entrada)
-        {
-            string temp = entrada.ToUpper();
-            foreach(string s in TermosParaRemover)
-            {
-                if(temp.Contains(s.ToUpper()))
-                {
-                    entrada = Regex.Replace(entrada, Regex.Escape(s),"", RegexOptions.IgnoreCase);
-                }
-            }
-            return entrada;
-        }
-
-
 
         public static Dictionary<string, string> cifraToDict(string s)
         {

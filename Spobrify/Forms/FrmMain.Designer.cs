@@ -54,6 +54,9 @@
             this.pnlControles2 = new System.Windows.Forms.FlowLayoutPanel();
             this.lblVolume = new System.Windows.Forms.Label();
             this.timerNextSong = new System.Windows.Forms.Timer(this.components);
+            this.Nome = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Thumb = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.grdPlayList)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.brVolume)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.brTempo)).BeginInit();
@@ -149,6 +152,10 @@
             this.grdPlayList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.grdPlayList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.grdPlayList.ColumnHeadersVisible = false;
+            this.grdPlayList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Nome,
+            this.ID,
+            this.Thumb});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -395,6 +402,26 @@
             this.timerNextSong.Interval = 64;
             this.timerNextSong.Tick += new System.EventHandler(this.timerNextSong_Tick);
             // 
+            // Nome
+            // 
+            this.Nome.HeaderText = "Nome";
+            this.Nome.Name = "Nome";
+            this.Nome.ReadOnly = true;
+            // 
+            // ID
+            // 
+            this.ID.HeaderText = "ID";
+            this.ID.Name = "ID";
+            this.ID.ReadOnly = true;
+            this.ID.Visible = false;
+            // 
+            // Thumb
+            // 
+            this.Thumb.HeaderText = "Thumb";
+            this.Thumb.Name = "Thumb";
+            this.Thumb.ReadOnly = true;
+            this.Thumb.Visible = false;
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -454,6 +481,9 @@
         private System.Windows.Forms.FlowLayoutPanel pnlControles2;
         private System.Windows.Forms.Label lblVolume;
         private System.Windows.Forms.Timer timerNextSong;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Nome;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Thumb;
     }
 }
 

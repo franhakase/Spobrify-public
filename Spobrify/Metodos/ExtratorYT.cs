@@ -5,18 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-namespace Spobrify
+namespace Spobrify.Metodos
 {
-    public class Youtoba
+    public static class ExtratorYT
     {
-        public Youtoba()
-        {
-
-        }
-
-
-
-        public string Decipher(string id)
+        public static string Decipher(string id)
         {
             try
             {
@@ -160,7 +153,7 @@ namespace Spobrify
         }
 
 
-        public List<Musica> GetPlayList(string id)
+        public static List<Musica> GetPlayList(string id)
         {
             List<Musica> Playlist = new List<Musica>();
             try
@@ -207,7 +200,7 @@ namespace Spobrify
                         string IdDoVideo = InfoVideo[0];
                         string NomeDoVideo = InfoVideo[1];
                         string DuracaoDoVideo = InfoVideo[2];
-                        Musica EstaMusica = new Musica(Metodos.Utils.LimparNomeDoArtista(NomeDoVideo), IdDoVideo, "");
+                        Musica EstaMusica = new Musica(NomeDoVideo, IdDoVideo, "");
                         Playlist.Add(EstaMusica);
                     }
                 }
